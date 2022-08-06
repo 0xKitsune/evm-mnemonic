@@ -2,7 +2,7 @@ WHITESPACE = _{ " " | NEWLINE }
 COMMENT = _{ ("//" ~  (!NEWLINE ~ ANY)*) |  ("/*" ~ (!"*/" ~ ANY)* ~ "*/")}
 
 file = {SOI ~ (
-push1 | name | stop | add | mul | sub | div | sdiv |
+stop | add | mul | sub | div | sdiv |
 evmMod | smod | addmod | mulmod | exp | signextend | lt | gt | slt | sgt | eq | 
 iszero | and | or | xor | not | byte | shl | shr | sar | sha3 | address | balance | 
 origin | caller | callvalue | calldataload | calldatasize | calldatacopy | codesize | codecopy | 
@@ -14,13 +14,12 @@ push16 | push17 | push18 | push19 | push20 | push21 | push22 | push23 | push24 |
 push28 | push29 | push30 | push31 | push32 | dup1 | dup2 | dup3 | dup4 | dup5 | dup6 | dup7 | dup8 | dup9 | dup10 | 
 dup11 | dup12 | dup13 | dup14 | dup15 | dup16 | swap1 | swap2 | swap3 | swap4 | swap5 | swap6 | swap7 | swap8 | swap9 | 
 swap10 | swap11 | swap12 | swap13 | swap14 | swap15 | swap16 | log0 | log1 | log2 | log3 | log4 | create | call | callcode | 
-evmReturn | delegatecall | create2 | staticcall | revert | invalid | selfdestruct | hex_number | number
+evmReturn | delegatecall | create2 | staticcall | revert | selfdestruct | hex_number | number
 )+ ~ EOI}
 
 
 hex_number = @{ "0x" ~ ('0'..'9'| 'a'..'f'|'A'..'F')+ }
 number = @{ASCII_DIGIT+}
-name = { "name" | "NAME" }
 stop = { "stop" | "STOP" }
 add = { "add" | "ADD" }
 mul = { "mul" | "MUL" }
@@ -162,5 +161,4 @@ delegatecall = { "delegatecall" | "DELEGATECALL" }
 create2 = { "create2" | "CREATE2" }
 staticcall = { "staticcall" | "STATICCALL" }
 revert = { "revert" | "REVERT" }
-invalid = { "invalid" | "INVALID" }
 selfdestruct = { "selfdestruct" | "SELFDESTRUCT" }

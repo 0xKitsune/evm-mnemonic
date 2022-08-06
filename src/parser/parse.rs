@@ -1,7 +1,11 @@
+use core::num::ParseIntError;
+use num256::uint256;
 use pest::iterators::{Pair, Pairs};
 use pest::Parser;
-
 use std::iter::Peekable;
+use std::str::FromStr;
+
+use crate::compiler::compile::compile_instruction;
 
 #[derive(Parser)]
 #[grammar = "evmm.pest"]
@@ -10,7 +14,9 @@ pub struct EVMMParser;
 fn evmm_parse(unparsed_file: &str) {
     let parsed_file = parse_file(unparsed_file);
 
-    let instruction = parsed_file.into_inner().peekable();
+    let instructions = parsed_file.into_inner().peekable();
+
+    let contract_bytecode = parse_instructions(instructions, String::from(""));
 }
 
 fn parse_file(unparsed_file: &str) -> Pair<Rule> {
@@ -20,15 +26,44 @@ fn parse_file(unparsed_file: &str) -> Pair<Rule> {
         .unwrap() // get and unwrap the `file` rule; never fails
 }
 
-fn parse_instruction(mut peekable_instruction: Peekable<Pairs<Rule>>) {
-    let instruction = peekable_instruction.peek();
+//TODO: throw stack errors if there are not enough values on the stack or if stack too deep
+//TODO: validate that pushx pushes the right byte size to the stack
+fn parse_instructions(
+    mut peekable_instructions: Peekable<Pairs<Rule>>,
+    mut contract_bytecode: String,
+) -> String {
+    let next_instruction = peekable_instructions.peek();
 
-    if instruction.is_some() {
-        match instruction.unwrap().as_rule() {
-            Rule::number => {}
-            Rule::hex_number => {}
-            Rule::name => {}
-            Rule::stop => {}
+    if next_instruction.is_some() {
+        let instruction = next_instruction.unwrap();
+
+        let instruction_as_rule = instruction.as_rule();
+        match instruction_as_rule {
+            Rule::stop
+            | Rule::address
+            | Rule::origin
+            | Rule::caller
+            | Rule::callvalue
+            | Rule::calldatasize
+            | Rule::codesize
+            | Rule::returndatasize
+            | Rule::pc
+            | Rule::msize
+            | Rule::gas
+            | Rule::jumpdest
+            | Rule::gasprice
+            | Rule::blockhash
+            | Rule::coinbase
+            | Rule::timestamp
+            | Rule::blockNumber
+            | Rule::difficulty
+            | Rule::gaslimit
+            | Rule::chainid
+            | Rule::selfbalance
+            | Rule::basefee => {
+                contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+            }
+
             Rule::add => {}
             Rule::mul => {}
             Rule::sub => {}
@@ -55,31 +90,16 @@ fn parse_instruction(mut peekable_instruction: Peekable<Pairs<Rule>>) {
             Rule::shr => {}
             Rule::sar => {}
             Rule::sha3 => {}
-            Rule::address => {}
-            Rule::balance => {}
-            Rule::origin => {}
-            Rule::caller => {}
-            Rule::callvalue => {}
             Rule::calldataload => {}
-            Rule::calldatasize => {}
             Rule::calldatacopy => {}
-            Rule::codesize => {}
             Rule::codecopy => {}
-            Rule::gasprice => {}
+            Rule::balance => {}
+
             Rule::extcodesize => {}
             Rule::extcodecopy => {}
-            Rule::returndatasize => {}
             Rule::returndatacopy => {}
             Rule::extcodehash => {}
-            Rule::blockhash => {}
-            Rule::coinbase => {}
-            Rule::timestamp => {}
-            Rule::blockNumber => {}
-            Rule::difficulty => {}
-            Rule::gaslimit => {}
-            Rule::chainid => {}
-            Rule::selfbalance => {}
-            Rule::basefee => {}
+
             Rule::pop => {}
             Rule::mload => {}
             Rule::mstore => {}
@@ -88,10 +108,7 @@ fn parse_instruction(mut peekable_instruction: Peekable<Pairs<Rule>>) {
             Rule::sstore => {}
             Rule::jump => {}
             Rule::jumpi => {}
-            Rule::pc => {}
-            Rule::msize => {}
-            Rule::gas => {}
-            Rule::jumpdest => {}
+
             Rule::push1 => {}
             Rule::push2 => {}
             Rule::push3 => {}
@@ -169,11 +186,59 @@ fn parse_instruction(mut peekable_instruction: Peekable<Pairs<Rule>>) {
             Rule::create2 => {}
             Rule::staticcall => {}
             Rule::revert => {}
-            Rule::invalid => {}
             Rule::selfdestruct => {}
+
+            Rule::number => {
+                contract_bytecode.push_str(instruction.as_str());
+            }
+            Rule::hex_number => {}
+
             _ => {}
         }
     }
+
+    return contract_bytecode;
+}
+
+///Gets the size of a number or hex number when represented as bytes
+fn get_byte_size(instruction: Pair<Rule>) -> usize {
+    match instruction.as_rule() {
+        Rule::number => {
+            let number_value = uint256::Uint256::from_str(instruction.as_str()).unwrap();
+            let number_value_as_bytes = number_value.to_bytes_be();
+
+            //return the length of bytes
+            number_value_as_bytes.len()
+        }
+        Rule::hex_number => {
+            let hex_number_value_as_bytes = decode_hex(instruction.as_str()).unwrap();
+
+            //return the length of bytes
+            hex_number_value_as_bytes.len()
+        }
+        _ => {
+            panic!("Something went wrong, a non number or hex number Pair<Rule> was passed into get_byte_size")
+        }
+    }
+}
+
+fn decode_hex(s: &str) -> Result<Vec<u8>, ParseIntError> {
+    (0..s.len())
+        .step_by(2)
+        .map(|i| u8::from_str_radix(&s[i..i + 2], 16))
+        .collect()
+}
+
+#[test]
+fn test_evmm_parse() {
+    let file = r#"
+    65454
+    PUSH1 0x01 //[0x01]
+    push5 0x0102030405 //[0x0102030405 0x01]
+    CALLER //[CALLER 0x0102030405 0x01]
+    "#;
+
+    evmm_parse(file);
 }
 
 #[test]
@@ -185,8 +250,4 @@ fn test_parse_file() {
     "#;
 
     let parsed_file = parse_file(file);
-
-    // println!("{:?}", parsed_file);
-
-    evmm_parse(file);
 }
