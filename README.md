@@ -7,7 +7,7 @@ Inspired by [EVM codes](https://www.evm.codes/playground?unit=Wei&codeType=Mnemo
 
 
 ## Syntax
-(Will update later with a real snippet for swapping on a DEX or calling harvest on a vault or something.)
+(Will update later with a real snippet for swapping on a DEX or something.)
 
 ```rust
 PUSH1 0x42
