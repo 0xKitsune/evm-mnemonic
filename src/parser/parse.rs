@@ -1,5 +1,7 @@
-use pest::iterators::Pair;
+use pest::iterators::{Pair, Pairs};
 use pest::Parser;
+
+use std::iter::Peekable;
 
 #[derive(Parser)]
 #[grammar = "evmm.pest"]
@@ -8,9 +10,21 @@ pub struct EVMMParser;
 fn evmm_parse(unparsed_file: &str) {
     let parsed_file = parse_file(unparsed_file);
 
-    for instruction in parsed_file.into_inner() {
-        println!("{:?}", instruction);
-        match instruction.as_rule() {
+    let instruction = parsed_file.into_inner().peekable();
+}
+
+fn parse_file(unparsed_file: &str) -> Pair<Rule> {
+    EVMMParser::parse(Rule::file, &unparsed_file)
+        .expect("unsuccessful parse") // unwrap the parse result
+        .next()
+        .unwrap() // get and unwrap the `file` rule; never fails
+}
+
+fn parse_instruction(mut peekable_instruction: Peekable<Pairs<Rule>>) {
+    let instruction = peekable_instruction.peek();
+
+    if instruction.is_some() {
+        match instruction.unwrap().as_rule() {
             Rule::number => {}
             Rule::hex_number => {}
             Rule::name => {}
@@ -160,13 +174,6 @@ fn evmm_parse(unparsed_file: &str) {
             _ => {}
         }
     }
-}
-
-fn parse_file(unparsed_file: &str) -> Pair<Rule> {
-    EVMMParser::parse(Rule::file, &unparsed_file)
-        .expect("unsuccessful parse") // unwrap the parse result
-        .next()
-        .unwrap() // get and unwrap the `file` rule; never fails
 }
 
 #[test]
