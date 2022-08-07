@@ -470,163 +470,46 @@ fn parse_instructions(
                 }
 
                 //Validate size of the value following the instruction, compile instruction and add it to the contract bytecode
-                Rule::push1 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 1);
+                Rule::push1
+                | Rule::push2
+                | Rule::push3
+                | Rule::push4
+                | Rule::push5
+                | Rule::push6
+                | Rule::push7
+                | Rule::push8
+                | Rule::push9
+                | Rule::push10
+                | Rule::push11
+                | Rule::push12
+                | Rule::push13
+                | Rule::push14
+                | Rule::push15
+                | Rule::push16
+                | Rule::push17
+                | Rule::push18
+                | Rule::push19
+                | Rule::push20
+                | Rule::push21
+                | Rule::push22
+                | Rule::push23
+                | Rule::push24
+                | Rule::push25
+                | Rule::push26
+                | Rule::push27
+                | Rule::push28
+                | Rule::push29
+                | Rule::push30
+                | Rule::push31
+                | Rule::push32 => {
+                    //Split the instruction as a string so the result is ("push", expected_size), then parse the expected size as a usize
+                    let expected_size =
+                        instruction.as_str().split_at(3).1.parse::<usize>().unwrap();
 
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push2 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 2);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push3 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 3);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push4 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 4);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push5 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 5);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push6 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 6);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push7 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 7);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push8 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 8);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push9 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 9);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push10 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 10);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push11 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 11);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push12 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 12);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push13 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 13);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push14 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 14);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push15 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 15);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push16 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 16);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push17 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 17);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push18 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 18);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push19 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 19);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push20 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 20);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push21 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 21);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push22 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 22);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push23 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 23);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push24 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 24);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push25 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 25);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push26 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 26);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push27 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 27);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push28 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 28);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push29 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 29);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push30 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 30);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push31 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 31);
-
-                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
-                Rule::push32 => {
-                    validate_value_proceeding_push_instruction(peekable_instructions.peek(), 32);
+                    validate_value_proceeding_push_instruction(
+                        peekable_instructions.peek(),
+                        expected_size,
+                    );
 
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
                 }
