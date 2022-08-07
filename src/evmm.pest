@@ -2,10 +2,10 @@ WHITESPACE = _{ " " | NEWLINE }
 COMMENT = _{ ("//" ~  (!NEWLINE ~ ANY)*) |  ("/*" ~ (!"*/" ~ ANY)* ~ "*/")}
 
 file = {SOI ~ (
-stop | add | mul | sub | div | sdiv |
+stop | address | add | mul | sub | div | sdiv |
 evmMod | smod | addmod | mulmod | exp | signextend | lt | gt | slt | sgt | eq | 
-iszero | and | or | xor | not | byte | shl | shr | sar | keccak256 | address | balance | 
-origin | caller | callvalue | calldataload | calldatasize | calldatacopy | codesize | codecopy | 
+iszero | and | origin | or | xor | not | byte | shl | shr | sar | keccak256 | balance | 
+caller | callvalue | calldataload | calldatasize | calldatacopy | codesize | codecopy | 
 gasprice | extcodesize | extcodecopy | returndatasize | returndatacopy | extcodehash | blockhash | 
 coinbase | timestamp | blockNumber | difficulty | gaslimit | chainid | selfbalance | basefee | pop | 
 mload | mstore | mstore8 | sload | sstore | jump | jumpi | pc | msize | gas | jumpdest | push1 | push2 | 
@@ -18,8 +18,6 @@ evmReturn | delegatecall | create2 | staticcall | revert | selfdestruct | hex_nu
 )+ ~ EOI}
 
 
-hex_number = @{ "0x" ~ ('0'..'9'| 'a'..'f'|'A'..'F')+ }
-number = @{ASCII_DIGIT+}
 stop = { "stop" | "STOP" }
 add = { "add" | "ADD" }
 mul = { "mul" | "MUL" }
@@ -162,3 +160,7 @@ create2 = { "create2" | "CREATE2" }
 staticcall = { "staticcall" | "STATICCALL" }
 revert = { "revert" | "REVERT" }
 selfdestruct = { "selfdestruct" | "SELFDESTRUCT" }
+
+
+hex_number = @{ "0x" ~ ('0'..'9'| 'a'..'f'|'A'..'F')+ }
+number = @{ASCII_DIGIT+}

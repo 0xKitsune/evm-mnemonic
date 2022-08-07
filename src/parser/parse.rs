@@ -12,14 +12,12 @@ use crate::compiler::compile::compile_instruction;
 #[grammar = "evmm.pest"]
 pub struct EVMMParser;
 
-fn evmm_parse(unparsed_file: &str) {
+fn evmm_parse(unparsed_file: &str) -> String {
     let parsed_file = parse_file(unparsed_file);
 
     let instructions = parsed_file.into_inner().peekable();
 
-    let contract_bytecode = parse_instructions(instructions, String::from(""));
-
-    println!("{:?}", contract_bytecode);
+    parse_instructions(instructions, String::from(""))
 }
 
 fn parse_file(unparsed_file: &str) -> Pair<Rule> {
