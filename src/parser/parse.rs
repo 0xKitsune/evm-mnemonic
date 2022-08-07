@@ -29,8 +29,6 @@ fn parse_file(unparsed_file: &str) -> Pair<Rule> {
         .unwrap() // get and unwrap the `file` rule; never fails
 }
 
-//TODO: validate that pushx pushes the right byte size to the stack
-//TODO: check for stack too deep errors
 fn parse_instructions(
     mut peekable_instructions: Peekable<Pairs<Rule>>,
     mut contract_bytecode: String,
@@ -75,19 +73,49 @@ fn parse_instructions(
                 | Rule::chainid
                 | Rule::selfbalance
                 | Rule::extcodesize
-                | Rule::basefee => {
+                | Rule::basefee
+                | Rule::extcodehash => {
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                    //consume 0 stack values and add a value onto the stack, resulting in a increase of the stack size by 1
+
                     stack_size += 1;
                 }
 
-                //Compile instructions that consume 1 stack value and push a value on the stack
-                Rule::iszero | Rule::calldataload => {
+                //Compile instructions that consume 1 stack value and push 0 values on the stack
+                Rule::pop | Rule::jump | Rule::selfdestruct => {
+                    if stack_size < 1 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 1 stack values and add nothing onto the stack, resulting in a reduction of the stack size by 1
+                    stack_size -= 1;
+                }
+
+                //Compile instructions that consume 1 stack values and push a value on the stack
+                Rule::iszero | Rule::calldataload | Rule::mload | Rule::sload => {
                     if stack_size < 1 {
                         //TODO: error saying not enough values on stack
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
                     //consume 1 stack values and add 1 onto the stack, resulting in no change to the stack size
+                }
+
+                //Compile instructions that consume 2 stack values and push 0 values on the stack
+                Rule::mstore
+                | Rule::mstore8
+                | Rule::sstore
+                | Rule::jumpi
+                | Rule::log0
+                | Rule::evmReturn
+                | Rule::revert => {
+                    if stack_size < 2 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size -= 2;
                 }
 
                 //Compile instructions that consume 2 stack values and push a value on the stack
@@ -123,8 +151,19 @@ fn parse_instructions(
                     stack_size -= 1;
                 }
 
-                //Compile instructions that consume 3 stack values and push a value on the stack
-                Rule::addmod | Rule::mulmod | Rule::calldatacopy => {
+                //Compile instructions that consume 3 stack values and push 0 values on the stack
+                Rule::returndatacopy | Rule::log1 => {
+                    if stack_size < 3 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 3 stack values and add 0 onto the stack, resulting in a reduction of the stack size by 3
+                    stack_size -= 3;
+                }
+
+                //Compile instructions that consume 3 stack values and push 1 value on the stack
+                Rule::addmod | Rule::mulmod | Rule::calldatacopy | Rule::create => {
                     if stack_size < 2 {
                         //TODO: error saying not enough values on stack
                     }
@@ -134,74 +173,301 @@ fn parse_instructions(
                     stack_size -= 2;
                 }
 
-                //Compile instructions that consume 3 stack values and push no values on the stack
-                Rule::returndatacopy => {
+                //Compile instructions that consume 4 stack values and push 0 values on the stack
+                Rule::log2 => {
+                    if stack_size < 4 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 4 stack values and add 0 onto the stack, resulting in a reduction of the stack size by 4
+                    stack_size -= 4;
+                }
+
+                //Compile instructions that consume 4 stack values and push a value on the stack
+                Rule::extcodecopy | Rule::create2 => {
+                    if stack_size < 4 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 4 stack values and add 1 onto the stack, resulting in a reduction of the stack size by 3
+                    stack_size -= 3;
+                }
+
+                //Compile instructions that consume 5 stack values and push 0 values on the stack
+                Rule::log3 => {
+                    if stack_size < 5 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 4 stack values and add 0 onto the stack, resulting in a reduction of the stack size by 4
+                    stack_size -= 5;
+                }
+
+                //Compile instructions that consume 6 stack values and push 0 values on the stack
+                Rule::log4 => {
+                    if stack_size < 6 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 4 stack values and add 0 onto the stack, resulting in a reduction of the stack size by 4
+                    stack_size -= 6;
+                }
+
+                //Compile instructions that consume 6 stack values and push 1 value on the stack
+                Rule::delegatecall | Rule::staticcall => {
+                    if stack_size < 6 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 4 stack values and add 0 onto the stack, resulting in a reduction of the stack size by 4
+                    stack_size -= 6;
+                }
+
+                //Compile instructions that consume 7 stack values and push 1 value on the stack
+                Rule::call | Rule::callcode => {
+                    if stack_size < 7 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 7 stack values and add 1 onto the stack, resulting in a reduction of the stack size by 6
+                    stack_size -= 6;
+                }
+
+                //Compile dup instructions that duplicate a stack value at a specific position, pushing the duplicate to the top of the stack
+                //These instructions consume 0 values and add a value to the stack
+                Rule::dup1 => {
+                    if stack_size < 1 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup2 => {
                     if stack_size < 2 {
                         //TODO: error saying not enough values on stack
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
-                    //consume 3 stack values and add 0 onto the stack, resulting in a reduction of the stack size by 3
-                    stack_size -= 3;
+                    stack_size += 1;
+                }
+                Rule::dup3 => {
+                    if stack_size < 3 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup4 => {
+                    if stack_size < 4 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup5 => {
+                    if stack_size < 5 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup6 => {
+                    if stack_size < 6 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup7 => {
+                    if stack_size < 7 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup8 => {
+                    if stack_size < 8 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup9 => {
+                    if stack_size < 9 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup10 => {
+                    if stack_size < 10 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup11 => {
+                    if stack_size < 11 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup12 => {
+                    if stack_size < 12 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup13 => {
+                    if stack_size < 13 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup14 => {
+                    if stack_size < 14 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup15 => {
+                    if stack_size < 15 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
+                }
+                Rule::dup16 => {
+                    if stack_size < 16 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    stack_size += 1;
                 }
 
-                //TODO:
-                Rule::extcodecopy => {}
-                Rule::extcodehash => {}
-                Rule::pop => {}
-                Rule::mload => {}
-                Rule::mstore => {}
-                Rule::mstore8 => {}
-                Rule::sload => {}
-                Rule::sstore => {}
-                Rule::jump => {}
-                Rule::jumpi => {}
-                Rule::dup1 => {}
-                Rule::dup2 => {}
-                Rule::dup3 => {}
-                Rule::dup4 => {}
-                Rule::dup5 => {}
-                Rule::dup6 => {}
-                Rule::dup7 => {}
-                Rule::dup8 => {}
-                Rule::dup9 => {}
-                Rule::dup10 => {}
-                Rule::dup11 => {}
-                Rule::dup12 => {}
-                Rule::dup13 => {}
-                Rule::dup14 => {}
-                Rule::dup15 => {}
-                Rule::dup16 => {}
-                Rule::swap1 => {}
-                Rule::swap2 => {}
-                Rule::swap3 => {}
-                Rule::swap4 => {}
-                Rule::swap5 => {}
-                Rule::swap6 => {}
-                Rule::swap7 => {}
-                Rule::swap8 => {}
-                Rule::swap9 => {}
-                Rule::swap10 => {}
-                Rule::swap11 => {}
-                Rule::swap12 => {}
-                Rule::swap13 => {}
-                Rule::swap14 => {}
-                Rule::swap15 => {}
-                Rule::swap16 => {}
-                Rule::log0 => {}
-                Rule::log1 => {}
-                Rule::log2 => {}
-                Rule::log3 => {}
-                Rule::log4 => {}
-                Rule::create => {}
-                Rule::call => {}
-                Rule::callcode => {}
-                Rule::evmReturn => {}
-                Rule::delegatecall => {}
-                Rule::create2 => {}
-                Rule::staticcall => {}
-                Rule::revert => {}
-                Rule::selfdestruct => {}
+                //Compile swap instructions that swap the top position with a specified position on the stack
+                //No stack values are consumed or added
+                Rule::swap1 => {
+                    if stack_size < 1 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap2 => {
+                    if stack_size < 2 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap3 => {
+                    if stack_size < 3 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap4 => {
+                    if stack_size < 4 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap5 => {
+                    if stack_size < 5 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap6 => {
+                    if stack_size < 6 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap7 => {
+                    if stack_size < 7 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap8 => {
+                    if stack_size < 8 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap9 => {
+                    if stack_size < 9 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap10 => {
+                    if stack_size < 10 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap11 => {
+                    if stack_size < 11 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap12 => {
+                    if stack_size < 12 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap13 => {
+                    if stack_size < 13 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap14 => {
+                    if stack_size < 14 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap15 => {
+                    if stack_size < 15 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+                Rule::swap16 => {
+                    if stack_size < 16 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
 
                 //Validate size of the value following the instruction, compile instruction and add it to the contract bytecode
                 Rule::push1 => {
