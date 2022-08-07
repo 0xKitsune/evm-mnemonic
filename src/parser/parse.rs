@@ -29,12 +29,14 @@ fn parse_file(unparsed_file: &str) -> Pair<Rule> {
         .unwrap() // get and unwrap the `file` rule; never fails
 }
 
-//TODO: throw stack errors if there are not enough values on the stack or if stack too deep
 //TODO: validate that pushx pushes the right byte size to the stack
+//TODO: check for stack too deep errors
 fn parse_instructions(
     mut peekable_instructions: Peekable<Pairs<Rule>>,
     mut contract_bytecode: String,
 ) -> String {
+    let mut stack_size: usize = 0;
+
     loop {
         let next_instruction = peekable_instructions.peek();
 
@@ -44,9 +46,13 @@ fn parse_instructions(
             let instruction_as_rule = instruction.as_rule();
 
             match instruction_as_rule {
-                //Compile instruction and add it to the contract bytecode
-                Rule::stop
-                | Rule::address
+                //Compile instructions that consume 0 stack values and do not push a value on the stack
+                Rule::stop => {
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
+
+                //Compile instructions that consume 0 stack values and push a value on the stack
+                Rule::address
                 | Rule::origin
                 | Rule::caller
                 | Rule::callvalue
@@ -57,53 +63,90 @@ fn parse_instructions(
                 | Rule::msize
                 | Rule::gas
                 | Rule::jumpdest
+                | Rule::balance
                 | Rule::gasprice
                 | Rule::blockhash
                 | Rule::coinbase
                 | Rule::timestamp
+                | Rule::codecopy
                 | Rule::blockNumber
                 | Rule::difficulty
                 | Rule::gaslimit
                 | Rule::chainid
                 | Rule::selfbalance
+                | Rule::extcodesize
                 | Rule::basefee => {
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                    stack_size += 1;
                 }
 
-                //Validate stack size, compile instruction and add to the contract bytecode
-                Rule::add => {}
-                Rule::mul => {}
-                Rule::sub => {}
-                Rule::div => {}
-                Rule::sdiv => {}
-                Rule::evmMod => {}
-                Rule::smod => {}
-                Rule::addmod => {}
-                Rule::mulmod => {}
-                Rule::exp => {}
-                Rule::signextend => {}
-                Rule::lt => {}
-                Rule::gt => {}
-                Rule::slt => {}
-                Rule::sgt => {}
-                Rule::eq => {}
-                Rule::iszero => {}
-                Rule::and => {}
-                Rule::or => {}
-                Rule::xor => {}
-                Rule::not => {}
-                Rule::byte => {}
-                Rule::shl => {}
-                Rule::shr => {}
-                Rule::sar => {}
-                Rule::sha3 => {}
-                Rule::calldataload => {}
-                Rule::calldatacopy => {}
-                Rule::codecopy => {}
-                Rule::balance => {}
-                Rule::extcodesize => {}
+                //Compile instructions that consume 1 stack value and push a value on the stack
+                Rule::iszero | Rule::calldataload => {
+                    if stack_size < 1 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 1 stack values and add 1 onto the stack, resulting in no change to the stack size
+                }
+
+                //Compile instructions that consume 2 stack values and push a value on the stack
+                Rule::add
+                | Rule::mul
+                | Rule::sub
+                | Rule::div
+                | Rule::sdiv
+                | Rule::evmMod
+                | Rule::smod
+                | Rule::lt
+                | Rule::gt
+                | Rule::slt
+                | Rule::sgt
+                | Rule::eq
+                | Rule::and
+                | Rule::or
+                | Rule::xor
+                | Rule::not
+                | Rule::byte
+                | Rule::shl
+                | Rule::shr
+                | Rule::sar
+                | Rule::keccak256
+                | Rule::exp
+                | Rule::signextend => {
+                    if stack_size < 2 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 2 stack values and add 1 onto the stack, resulting in a reduction of the stack size by 1
+                    stack_size -= 1;
+                }
+
+                //Compile instructions that consume 3 stack values and push a value on the stack
+                Rule::addmod | Rule::mulmod | Rule::calldatacopy => {
+                    if stack_size < 2 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 3 stack values and add 1 onto the stack, resulting in a reduction of the stack size by 2
+                    stack_size -= 2;
+                }
+
+                //Compile instructions that consume 3 stack values and push no values on the stack
+                Rule::returndatacopy => {
+                    if stack_size < 2 {
+                        //TODO: error saying not enough values on stack
+                    }
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+
+                    //consume 3 stack values and add 0 onto the stack, resulting in a reduction of the stack size by 3
+                    stack_size -= 3;
+                }
+
+                //TODO:
                 Rule::extcodecopy => {}
-                Rule::returndatacopy => {}
                 Rule::extcodehash => {}
                 Rule::pop => {}
                 Rule::mload => {}
@@ -161,7 +204,9 @@ fn parse_instructions(
                 Rule::selfdestruct => {}
 
                 //Validate size of the value following the instruction, compile instruction and add it to the contract bytecode
-                Rule::push1 => {}
+                Rule::push1 => {
+                    contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
+                }
                 Rule::push2 => {}
                 Rule::push3 => {}
                 Rule::push4 => {}
@@ -195,13 +240,7 @@ fn parse_instructions(
                 Rule::push32 => {}
 
                 //Add literals to the contract bytecode as a hex number
-                Rule::number => {
-                    contract_bytecode
-                        .push_str(&convert_to_hex_number_and_strip_prefix(instruction));
-                }
-
-                Rule::hex_number => {
-                    //Strip the 0x from the hex number and add the value to the contract bytecode
+                Rule::number | Rule::hex_number => {
                     contract_bytecode
                         .push_str(&convert_to_hex_number_and_strip_prefix(instruction));
                 }

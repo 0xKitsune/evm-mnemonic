@@ -4,7 +4,7 @@ COMMENT = _{ ("//" ~  (!NEWLINE ~ ANY)*) |  ("/*" ~ (!"*/" ~ ANY)* ~ "*/")}
 file = {SOI ~ (
 stop | add | mul | sub | div | sdiv |
 evmMod | smod | addmod | mulmod | exp | signextend | lt | gt | slt | sgt | eq | 
-iszero | and | or | xor | not | byte | shl | shr | sar | sha3 | address | balance | 
+iszero | and | or | xor | not | byte | shl | shr | sar | keccak256 | address | balance | 
 origin | caller | callvalue | calldataload | calldatasize | calldatacopy | codesize | codecopy | 
 gasprice | extcodesize | extcodecopy | returndatasize | returndatacopy | extcodehash | blockhash | 
 coinbase | timestamp | blockNumber | difficulty | gaslimit | chainid | selfbalance | basefee | pop | 
@@ -46,7 +46,7 @@ byte = { "byte" | "BYTE" }
 shl = { "shl" | "SHL" }
 shr = { "shr" | "SHR" }
 sar = { "sar" | "SAR" }
-sha3 = { "sha3" | "SHA3" }
+keccak256 = { "keccak256" | "KECCAK256" }
 address = { "address" | "ADDRESS" }
 balance = { "balance" | "BALANCE" }
 origin = { "origin" | "ORIGIN" }

@@ -30,7 +30,7 @@ pub fn compile_instruction(instruction: Rule) -> String {
         Rule::shl => return String::from("1B"),
         Rule::shr => return String::from("1C"),
         Rule::sar => return String::from("1D"),
-        Rule::sha3 => return String::from("20"),
+        Rule::keccak256 => return String::from("20"),
         Rule::address => return String::from("30"),
         Rule::balance => return String::from("31"),
         Rule::origin => return String::from("32"),
