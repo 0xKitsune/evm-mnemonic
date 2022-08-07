@@ -257,6 +257,8 @@ fn parse_instructions(
                 | Rule::dup14
                 | Rule::dup15
                 | Rule::dup16 => {
+                    println!("{:?}", instruction.as_str());
+
                     let expected_stack_size =
                         instruction.as_str().split_at(3).1.parse::<usize>().unwrap();
 
@@ -329,8 +331,9 @@ fn parse_instructions(
                 | Rule::push31
                 | Rule::push32 => {
                     //Split the instruction as a string so the result is ("push", expected_size), then parse the expected size as a usize
+
                     let expected_size =
-                        instruction.as_str().split_at(3).1.parse::<usize>().unwrap();
+                        instruction.as_str().split_at(4).1.parse::<usize>().unwrap();
 
                     validate_value_proceeding_push_instruction(
                         peekable_instructions.peek(),
@@ -408,7 +411,8 @@ fn get_byte_size(instruction: &Pair<Rule>) -> usize {
             number_value_as_bytes.len()
         }
         Rule::hex_number => {
-            let hex_number_value_as_bytes = decode_hex(instruction.as_str()).unwrap();
+            let hex_number_value_as_bytes =
+                decode_hex(&convert_to_hex_number_and_strip_prefix(instruction)).unwrap();
 
             //return the length of bytes
             hex_number_value_as_bytes.len()
@@ -426,24 +430,29 @@ fn decode_hex(s: &str) -> Result<Vec<u8>, ParseIntError> {
         .collect()
 }
 
-#[test]
-fn test_evmm_parse() {
-    let file = r#"
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_evmm_parse() {
+        let file = r#"
+        PUSH1 0x01 //[0x01]
+        push5 0x0102030405 //[0x0102030405 0x01]
+        CALLER //[CALLER 0x0102030405 0x01]
+        "#;
+
+        evmm_parse(file);
+    }
+
+    #[test]
+    fn test_parse_file() {
+        let file = r#"
     PUSH1 0x01 //[0x01]
     push5 0x0102030405 //[0x0102030405 0x01]
     CALLER //[CALLER 0x0102030405 0x01]
     "#;
 
-    evmm_parse(file);
-}
-
-#[test]
-fn test_parse_file() {
-    let file = r#"
-    PUSH1 0x01 //[0x01]
-    push5 0x0102030405 //[0x0102030405 0x01]
-    CALLER //[CALLER 0x0102030405 0x01]
-    "#;
-
-    let parsed_file = parse_file(file);
+        let parsed_file = parse_file(file);
+    }
 }
