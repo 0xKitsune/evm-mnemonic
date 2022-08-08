@@ -1,3 +1,5 @@
+use crate::compiler::compile::compile_instruction;
+use crate::parser::parser_error::EVMMParserError;
 use core::num::ParseIntError;
 use core::panic;
 use num256::uint256;
@@ -6,18 +8,16 @@ use pest::Parser;
 use std::iter::Peekable;
 use std::str::FromStr;
 
-use crate::compiler::compile::compile_instruction;
-
 #[derive(Parser)]
 #[grammar = "evmm.pest"]
 pub struct EVMMParser;
 
-fn evmm_parse(unparsed_file: &str) -> String {
+fn evmm_parse(unparsed_file: &str) -> Result<String, EVMMParserError> {
     let parsed_file = parse_file(unparsed_file);
 
     let instructions = parsed_file.into_inner().peekable();
 
-    parse_instructions(instructions, String::from(""))
+    Ok(parse_instructions(instructions, String::from(""))?)
 }
 
 fn parse_file(unparsed_file: &str) -> Pair<Rule> {
@@ -30,7 +30,7 @@ fn parse_file(unparsed_file: &str) -> Pair<Rule> {
 fn parse_instructions(
     mut peekable_instructions: Peekable<Pairs<Rule>>,
     mut contract_bytecode: String,
-) -> String {
+) -> Result<String, EVMMParserError> {
     let mut stack_size: usize = 0;
 
     loop {
@@ -82,7 +82,11 @@ fn parse_instructions(
                 //Compile instructions that consume 1 stack value and push 0 values on the stack
                 Rule::pop | Rule::jump | Rule::selfdestruct => {
                     if stack_size < 1 {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            1,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
@@ -93,7 +97,11 @@ fn parse_instructions(
                 //Compile instructions that consume 1 stack values and push a value on the stack
                 Rule::iszero | Rule::calldataload | Rule::mload | Rule::sload => {
                     if stack_size < 1 {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            1,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
@@ -109,7 +117,11 @@ fn parse_instructions(
                 | Rule::evmReturn
                 | Rule::revert => {
                     if stack_size < 2 {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            2,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
@@ -141,7 +153,11 @@ fn parse_instructions(
                 | Rule::exp
                 | Rule::signextend => {
                     if stack_size < 2 {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            2,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
@@ -152,7 +168,11 @@ fn parse_instructions(
                 //Compile instructions that consume 3 stack values and push 0 values on the stack
                 Rule::returndatacopy | Rule::log1 => {
                     if stack_size < 3 {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            3,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
@@ -162,8 +182,12 @@ fn parse_instructions(
 
                 //Compile instructions that consume 3 stack values and push 1 value on the stack
                 Rule::addmod | Rule::mulmod | Rule::calldatacopy | Rule::create => {
-                    if stack_size < 2 {
-                        //TODO: error saying not enough values on stack
+                    if stack_size < 3 {
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            3,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
@@ -174,7 +198,11 @@ fn parse_instructions(
                 //Compile instructions that consume 4 stack values and push 0 values on the stack
                 Rule::log2 => {
                     if stack_size < 4 {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            4,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
@@ -185,7 +213,11 @@ fn parse_instructions(
                 //Compile instructions that consume 4 stack values and push a value on the stack
                 Rule::extcodecopy | Rule::create2 => {
                     if stack_size < 4 {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            4,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
@@ -196,7 +228,11 @@ fn parse_instructions(
                 //Compile instructions that consume 5 stack values and push 0 values on the stack
                 Rule::log3 => {
                     if stack_size < 5 {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            5,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
@@ -207,29 +243,41 @@ fn parse_instructions(
                 //Compile instructions that consume 6 stack values and push 0 values on the stack
                 Rule::log4 => {
                     if stack_size < 6 {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            6,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
-                    //consume 4 stack values and add 0 onto the stack, resulting in a reduction of the stack size by 4
+                    //consume 6 stack values and add 0 onto the stack, resulting in a reduction of the stack size by 4
                     stack_size -= 6;
                 }
 
                 //Compile instructions that consume 6 stack values and push 1 value on the stack
                 Rule::delegatecall | Rule::staticcall => {
                     if stack_size < 6 {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            6,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
-                    //consume 4 stack values and add 0 onto the stack, resulting in a reduction of the stack size by 4
-                    stack_size -= 6;
+                    //consume 6 stack values and add 1 onto the stack, resulting in a reduction of the stack size by 4
+                    stack_size -= 5;
                 }
 
                 //Compile instructions that consume 7 stack values and push 1 value on the stack
                 Rule::call | Rule::callcode => {
                     if stack_size < 7 {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            7,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
@@ -255,13 +303,15 @@ fn parse_instructions(
                 | Rule::dup14
                 | Rule::dup15
                 | Rule::dup16 => {
-                    println!("{:?}", instruction.as_str());
-
                     let expected_stack_size =
                         instruction.as_str().split_at(3).1.parse::<usize>().unwrap();
 
                     if stack_size < expected_stack_size {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            expected_stack_size,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
@@ -290,7 +340,11 @@ fn parse_instructions(
                         instruction.as_str().split_at(3).1.parse::<usize>().unwrap();
 
                     if stack_size < expected_stack_size {
-                        //TODO: error saying not enough values on stack
+                        return Err(EVMMParserError::NotEnoughValuesOnStack(
+                            instruction.as_str().to_owned(),
+                            expected_stack_size,
+                            stack_size,
+                        ));
                     }
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
                 }
@@ -334,10 +388,11 @@ fn parse_instructions(
                         instruction.as_str().split_at(4).1.parse::<usize>().unwrap();
 
                     //TODO: FIXME: `PUSH05 0x01` would hit an error at the moment, but it should left pad 4 bytes and push `0000000001` to the stack.
-                    validate_value_proceeding_push_instruction(
+                    validate_and_pad_value_proceeding_push_instruction(
+                        &instruction,
                         peekable_instructions.peek(),
                         expected_size,
-                    );
+                    )?;
 
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
                 }
@@ -355,14 +410,15 @@ fn parse_instructions(
         }
     }
 
-    return contract_bytecode;
+    return Ok(contract_bytecode);
 }
 
 ///Validate the size of a value proceeding a push instruction
-fn validate_value_proceeding_push_instruction(
+fn validate_and_pad_value_proceeding_push_instruction(
+    push_instruction: &Pair<Rule>,
     optional_next_instruction: Option<&Pair<Rule>>,
     expected_size: usize,
-) {
+) -> Result<(), EVMMParserError> {
     if optional_next_instruction.is_some() {
         let next_instruction = optional_next_instruction.unwrap();
 
@@ -370,17 +426,25 @@ fn validate_value_proceeding_push_instruction(
             Rule::number | Rule::hex_number => {
                 let value_byte_size = get_byte_size(next_instruction);
 
-                if value_byte_size != expected_size {
-                    //TODO: throw an error
+                if value_byte_size > expected_size {
+                    return Err(EVMMParserError::ValueTooBigForPushInstruction(
+                        push_instruction.as_str().to_owned(),
+                        next_instruction.as_str().to_owned(),
+                        value_byte_size,
+                    ));
+                } else {
+                    Ok(())
                 }
             }
 
             _ => {
-                //TODO: Throw an error
+                return Err(EVMMParserError::UnexpectedInstruction(
+                    next_instruction.as_str().to_owned(),
+                ));
             }
         }
     } else {
-        //TODO: throw an error
+        return Err(EVMMParserError::ExpectedInstruction());
     }
 }
 
