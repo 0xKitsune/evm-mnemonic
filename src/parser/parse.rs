@@ -12,17 +12,17 @@ use std::str::FromStr;
 #[grammar = "evmm.pest"]
 pub struct EVMMParser;
 
-fn evmm_parse(unparsed_file: &str) -> Result<String, EVMMParserError> {
-    let parsed_file = parse_file(unparsed_file);
+fn evmm_parse(file_name: String, unparsed_file: &str) -> Result<String, EVMMParserError> {
+    let parsed_file = parse_file(file_name, unparsed_file);
 
     let instructions = parsed_file.into_inner().peekable();
 
     Ok(parse_instructions(instructions, String::from(""))?)
 }
 
-fn parse_file(unparsed_file: &str) -> Pair<Rule> {
+fn parse_file(file_name: String, unparsed_file: &str) -> Pair<Rule> {
     EVMMParser::parse(Rule::file, &unparsed_file)
-        .expect("unsuccessful parse")
+        .expect(&format!("Error when parsing {:?}", file_name))
         .next()
         .unwrap()
 }
@@ -387,20 +387,18 @@ fn parse_instructions(
                     let expected_size =
                         instruction.as_str().split_at(4).1.parse::<usize>().unwrap();
 
-                    //validate the value to be pushed and return the padding size if any is necessary
-                    let padding_size = validate_proceeding_push_instruction(
+                    //validate the value to be pushed, apply padding and return the compiled value to be added to the contract bytecode
+                    let compiled_push_value = validate_proceeding_push_instruction(
                         &instruction,
                         peekable_instructions.peek(),
                         expected_size,
                     )?;
 
+                    //add the push instruction to the bytecode
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
 
-                    //apply padding if necessary and add the push value to the contract bytecode
-                    let push_value = convert_to_hex_number_and_strip_prefix(&instruction);
-
-                    //add the padded value to the contract bytecode
-                    contract_bytecode.push_str(&["00".repeat(padding_size), push_value].join(""));
+                    //add the padded value to the  bytecode
+                    contract_bytecode.push_str(&compiled_push_value);
                 }
 
                 _ => {}
@@ -413,12 +411,12 @@ fn parse_instructions(
     return Ok(contract_bytecode);
 }
 
-///Validate the size of a value proceeding a push instruction, returns the size of padding to apply to the value
+///Validate the size of a value proceeding a push instruction, returns the push value to be compiled and the size of padding to apply to the value
 fn validate_proceeding_push_instruction(
     push_instruction: &Pair<Rule>,
     optional_next_instruction: Option<&Pair<Rule>>,
     expected_size: usize,
-) -> Result<usize, EVMMParserError> {
+) -> Result<String, EVMMParserError> {
     if optional_next_instruction.is_some() {
         let next_instruction = optional_next_instruction.unwrap();
 
@@ -433,7 +431,15 @@ fn validate_proceeding_push_instruction(
                         value_byte_size,
                     ));
                 } else {
-                    Ok(expected_size - value_byte_size)
+                    let compiled_push_value =
+                        convert_to_hex_number_and_strip_prefix(next_instruction);
+
+                    //pad the value and return the compiled value to be added to the contract code
+                    Ok([
+                        "00".repeat(expected_size - value_byte_size),
+                        compiled_push_value,
+                    ]
+                    .join(""))
                 }
             }
 
@@ -458,7 +464,10 @@ fn convert_to_hex_number_and_strip_prefix(value: &Pair<Rule>) -> String {
 
         Rule::hex_number => value.as_str()[2..].to_string(),
         _ => {
-            panic!("Error when converting to hex number, unexpected rule");
+            panic!(
+                "Error when converting to hex number, unexpected rule: {:?}",
+                value.as_rule()
+            );
         }
     }
 }
@@ -505,7 +514,7 @@ mod tests {
         CALLER //[CALLER 0x0102030405 0x01]
         "#;
 
-        evmm_parse(file);
+        evmm_parse(String::from("test_case"), file).unwrap();
     }
 
     #[test]
@@ -516,7 +525,7 @@ mod tests {
     CALLER //[CALLER 0x0102030405 0x01]
     "#;
 
-        let parsed_file = parse_file(file);
+        let parsed_file = parse_file(String::from("test_case"), file);
 
         println!("{:?}", parsed_file);
     }
@@ -527,7 +536,7 @@ mod tests {
     PUSH1 0x01 
     "#;
 
-        let parsed_file = parse_file(file);
+        let parsed_file = parse_file(String::from("test_case"), file);
 
         println!("{:?}", parsed_file);
     }
