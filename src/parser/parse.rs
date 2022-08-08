@@ -333,6 +333,7 @@ fn parse_instructions(
                     let expected_size =
                         instruction.as_str().split_at(4).1.parse::<usize>().unwrap();
 
+                    //TODO: FIXME: `PUSH05 0x01` would hit an error at the moment, but it should left pad 4 bytes and push `0000000001` to the stack.
                     validate_value_proceeding_push_instruction(
                         peekable_instructions.peek(),
                         expected_size,
@@ -452,5 +453,18 @@ mod tests {
     "#;
 
         let parsed_file = parse_file(file);
+
+        println!("{:?}", parsed_file);
+    }
+
+    #[test]
+    fn test_push1() {
+        let file = r#"
+    PUSH1 0x01 
+    "#;
+
+        let parsed_file = parse_file(file);
+
+        println!("{:?}", parsed_file);
     }
 }

@@ -1,6 +1,5 @@
-use core::panic;
-
 use crate::parser::parse::Rule;
+use core::panic;
 
 pub fn compile_instruction(instruction: Rule) -> String {
     match instruction {
