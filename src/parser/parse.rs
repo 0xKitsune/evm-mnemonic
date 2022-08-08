@@ -22,9 +22,9 @@ fn evmm_parse(unparsed_file: &str) -> Result<String, EVMMParserError> {
 
 fn parse_file(unparsed_file: &str) -> Pair<Rule> {
     EVMMParser::parse(Rule::file, &unparsed_file)
-        .expect("unsuccessful parse") // unwrap the parse result
+        .expect("unsuccessful parse")
         .next()
-        .unwrap() // get and unwrap the `file` rule; never fails
+        .unwrap()
 }
 
 fn parse_instructions(
@@ -387,20 +387,20 @@ fn parse_instructions(
                     let expected_size =
                         instruction.as_str().split_at(4).1.parse::<usize>().unwrap();
 
-                    //TODO: FIXME: `PUSH05 0x01` would hit an error at the moment, but it should left pad 4 bytes and push `0000000001` to the stack.
-                    validate_and_pad_value_proceeding_push_instruction(
+                    //validate the value to be pushed and return the padding size if any is necessary
+                    let padding_size = validate_proceeding_push_instruction(
                         &instruction,
                         peekable_instructions.peek(),
                         expected_size,
                     )?;
 
                     contract_bytecode.push_str(&compile_instruction(instruction_as_rule));
-                }
 
-                //Add literals to the contract bytecode as a hex number
-                Rule::number | Rule::hex_number => {
-                    contract_bytecode
-                        .push_str(&convert_to_hex_number_and_strip_prefix(&instruction));
+                    //apply padding if necessary and add the push value to the contract bytecode
+                    let push_value = convert_to_hex_number_and_strip_prefix(&instruction);
+
+                    //add the padded value to the contract bytecode
+                    contract_bytecode.push_str(&["00".repeat(padding_size), push_value].join(""));
                 }
 
                 _ => {}
@@ -413,12 +413,12 @@ fn parse_instructions(
     return Ok(contract_bytecode);
 }
 
-///Validate the size of a value proceeding a push instruction
-fn validate_and_pad_value_proceeding_push_instruction(
+///Validate the size of a value proceeding a push instruction, returns the size of padding to apply to the value
+fn validate_proceeding_push_instruction(
     push_instruction: &Pair<Rule>,
     optional_next_instruction: Option<&Pair<Rule>>,
     expected_size: usize,
-) -> Result<(), EVMMParserError> {
+) -> Result<usize, EVMMParserError> {
     if optional_next_instruction.is_some() {
         let next_instruction = optional_next_instruction.unwrap();
 
@@ -433,7 +433,7 @@ fn validate_and_pad_value_proceeding_push_instruction(
                         value_byte_size,
                     ));
                 } else {
-                    Ok(())
+                    Ok(expected_size - value_byte_size)
                 }
             }
 
