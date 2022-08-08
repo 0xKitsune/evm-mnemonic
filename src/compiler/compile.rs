@@ -152,3 +152,860 @@ pub fn compile_instruction(instruction: Rule) -> String {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_compile_stop() {
+        let bytecode = compile_instruction(Rule::stop);
+        assert_eq!(bytecode, "00");
+    }
+
+    #[test]
+    fn test_compile_add() {
+        let bytecode = compile_instruction(Rule::add);
+        assert_eq!(bytecode, "01");
+    }
+
+    #[test]
+    fn test_compile_mul() {
+        let bytecode = compile_instruction(Rule::mul);
+        assert_eq!(bytecode, "02");
+    }
+
+    #[test]
+    fn test_compile_sub() {
+        let bytecode = compile_instruction(Rule::sub);
+        assert_eq!(bytecode, "03");
+    }
+
+    #[test]
+    fn test_compile_div() {
+        let bytecode = compile_instruction(Rule::div);
+        assert_eq!(bytecode, "04");
+    }
+
+    #[test]
+    fn test_compile_sdiv() {
+        let bytecode = compile_instruction(Rule::sdiv);
+        assert_eq!(bytecode, "05");
+    }
+
+    #[test]
+    fn test_compile_mod() {
+        let bytecode = compile_instruction(Rule::evmMod);
+        assert_eq!(bytecode, "06");
+    }
+
+    #[test]
+    fn test_compile_smod() {
+        let bytecode = compile_instruction(Rule::smod);
+        assert_eq!(bytecode, "07");
+    }
+
+    #[test]
+    fn test_compile_addmod() {
+        let bytecode = compile_instruction(Rule::addmod);
+        assert_eq!(bytecode, "08");
+    }
+
+    #[test]
+    fn test_compile_mulmod() {
+        let bytecode = compile_instruction(Rule::mulmod);
+        assert_eq!(bytecode, "09");
+    }
+
+    #[test]
+    fn test_compile_exp() {
+        let bytecode = compile_instruction(Rule::exp);
+        assert_eq!(bytecode, "0A");
+    }
+
+    #[test]
+    fn test_compile_signextend() {
+        let bytecode = compile_instruction(Rule::signextend);
+        assert_eq!(bytecode, "0B");
+    }
+
+    #[test]
+    fn test_compile_lt() {
+        let bytecode = compile_instruction(Rule::lt);
+        assert_eq!(bytecode, "10");
+    }
+
+    #[test]
+    fn test_compile_gt() {
+        let bytecode = compile_instruction(Rule::gt);
+        assert_eq!(bytecode, "11");
+    }
+
+    #[test]
+    fn test_compile_slt() {
+        let bytecode = compile_instruction(Rule::slt);
+        assert_eq!(bytecode, "12");
+    }
+
+    #[test]
+    fn test_compile_sgt() {
+        let bytecode = compile_instruction(Rule::sgt);
+        assert_eq!(bytecode, "13");
+    }
+
+    #[test]
+    fn test_compile_eq() {
+        let bytecode = compile_instruction(Rule::eq);
+        assert_eq!(bytecode, "14");
+    }
+
+    #[test]
+    fn test_compile_iszero() {
+        let bytecode = compile_instruction(Rule::iszero);
+        assert_eq!(bytecode, "15");
+    }
+
+    #[test]
+    fn test_compile_and() {
+        let bytecode = compile_instruction(Rule::and);
+        assert_eq!(bytecode, "16");
+    }
+
+    #[test]
+    fn test_compile_or() {
+        let bytecode = compile_instruction(Rule::or);
+        assert_eq!(bytecode, "17");
+    }
+
+    #[test]
+    fn test_compile_xor() {
+        let bytecode = compile_instruction(Rule::xor);
+        assert_eq!(bytecode, "18");
+    }
+
+    #[test]
+    fn test_compile_not() {
+        let bytecode = compile_instruction(Rule::not);
+        assert_eq!(bytecode, "19");
+    }
+
+    #[test]
+    fn test_compile_byte() {
+        let bytecode = compile_instruction(Rule::byte);
+        assert_eq!(bytecode, "1A");
+    }
+
+    #[test]
+    fn test_compile_shl() {
+        let bytecode = compile_instruction(Rule::shl);
+        assert_eq!(bytecode, "1B");
+    }
+
+    #[test]
+    fn test_compile_shr() {
+        let bytecode = compile_instruction(Rule::shr);
+        assert_eq!(bytecode, "1C");
+    }
+
+    #[test]
+    fn test_compile_sar() {
+        let bytecode = compile_instruction(Rule::sar);
+        assert_eq!(bytecode, "1D");
+    }
+
+    #[test]
+    fn test_compile_sha3() {
+        let bytecode = compile_instruction(Rule::keccak256);
+        assert_eq!(bytecode, "20");
+    }
+
+    #[test]
+    fn test_compile_address() {
+        let bytecode = compile_instruction(Rule::address);
+        assert_eq!(bytecode, "30");
+    }
+
+    #[test]
+    fn test_compile_balance() {
+        let bytecode = compile_instruction(Rule::balance);
+        assert_eq!(bytecode, "31");
+    }
+
+    #[test]
+    fn test_compile_origin() {
+        let bytecode = compile_instruction(Rule::origin);
+        assert_eq!(bytecode, "32");
+    }
+
+    #[test]
+    fn test_compile_caller() {
+        let bytecode = compile_instruction(Rule::caller);
+        assert_eq!(bytecode, "33");
+    }
+
+    #[test]
+    fn test_compile_callvalue() {
+        let bytecode = compile_instruction(Rule::callvalue);
+        assert_eq!(bytecode, "34");
+    }
+
+    #[test]
+    fn test_compile_calldataload() {
+        let bytecode = compile_instruction(Rule::calldataload);
+        assert_eq!(bytecode, "35");
+    }
+
+    #[test]
+    fn test_compile_calldatasize() {
+        let bytecode = compile_instruction(Rule::calldatasize);
+        assert_eq!(bytecode, "36");
+    }
+
+    #[test]
+    fn test_compile_calldatacopy() {
+        let bytecode = compile_instruction(Rule::calldatacopy);
+        assert_eq!(bytecode, "37");
+    }
+
+    #[test]
+    fn test_compile_codesize() {
+        let bytecode = compile_instruction(Rule::codesize);
+        assert_eq!(bytecode, "38");
+    }
+
+    #[test]
+    fn test_compile_codecopy() {
+        let bytecode = compile_instruction(Rule::codecopy);
+        assert_eq!(bytecode, "39");
+    }
+
+    #[test]
+    fn test_compile_gasprice() {
+        let bytecode = compile_instruction(Rule::gasprice);
+        assert_eq!(bytecode, "3A");
+    }
+
+    #[test]
+    fn test_compile_extcodesize() {
+        let bytecode = compile_instruction(Rule::extcodesize);
+        assert_eq!(bytecode, "3B");
+    }
+
+    #[test]
+    fn test_compile_extcodecopy() {
+        let bytecode = compile_instruction(Rule::extcodecopy);
+        assert_eq!(bytecode, "3C");
+    }
+
+    #[test]
+    fn test_compile_returndatasize() {
+        let bytecode = compile_instruction(Rule::returndatasize);
+        assert_eq!(bytecode, "3D");
+    }
+
+    #[test]
+    fn test_compile_returndatacopy() {
+        let bytecode = compile_instruction(Rule::returndatacopy);
+        assert_eq!(bytecode, "3E");
+    }
+
+    #[test]
+    fn test_compile_extcodehash() {
+        let bytecode = compile_instruction(Rule::extcodehash);
+        assert_eq!(bytecode, "3F");
+    }
+
+    #[test]
+    fn test_compile_blockhash() {
+        let bytecode = compile_instruction(Rule::blockhash);
+        assert_eq!(bytecode, "40");
+    }
+
+    #[test]
+    fn test_compile_coinbase() {
+        let bytecode = compile_instruction(Rule::coinbase);
+        assert_eq!(bytecode, "41");
+    }
+
+    #[test]
+    fn test_compile_timestamp() {
+        let bytecode = compile_instruction(Rule::timestamp);
+        assert_eq!(bytecode, "42");
+    }
+
+    #[test]
+    fn test_compile_number() {
+        let bytecode = compile_instruction(Rule::blockNumber);
+        assert_eq!(bytecode, "43");
+    }
+
+    #[test]
+    fn test_compile_difficulty() {
+        let bytecode = compile_instruction(Rule::difficulty);
+        assert_eq!(bytecode, "44");
+    }
+
+    #[test]
+    fn test_compile_gaslimit() {
+        let bytecode = compile_instruction(Rule::gaslimit);
+        assert_eq!(bytecode, "45");
+    }
+
+    #[test]
+    fn test_compile_chainid() {
+        let bytecode = compile_instruction(Rule::chainid);
+        assert_eq!(bytecode, "46");
+    }
+
+    #[test]
+    fn test_compile_selfbalance() {
+        let bytecode = compile_instruction(Rule::selfbalance);
+        assert_eq!(bytecode, "67");
+    }
+
+    #[test]
+    fn test_compile_basefee() {
+        let bytecode = compile_instruction(Rule::basefee);
+        assert_eq!(bytecode, "48");
+    }
+
+    #[test]
+    fn test_compile_pop() {
+        let bytecode = compile_instruction(Rule::pop);
+        assert_eq!(bytecode, "49");
+    }
+
+    #[test]
+    fn test_compile_mload() {
+        let bytecode = compile_instruction(Rule::mload);
+        assert_eq!(bytecode, "50");
+    }
+
+    #[test]
+    fn test_compile_mstore() {
+        let bytecode = compile_instruction(Rule::mstore);
+        assert_eq!(bytecode, "51");
+    }
+
+    #[test]
+    fn test_compile_mstore8() {
+        let bytecode = compile_instruction(Rule::mstore8);
+        assert_eq!(bytecode, "52");
+    }
+
+    #[test]
+    fn test_compile_sload() {
+        let bytecode = compile_instruction(Rule::sload);
+        assert_eq!(bytecode, "53");
+    }
+
+    #[test]
+    fn test_compile_sstore() {
+        let bytecode = compile_instruction(Rule::sstore);
+        assert_eq!(bytecode, "54");
+    }
+
+    #[test]
+    fn test_compile_jump() {
+        let bytecode = compile_instruction(Rule::jump);
+        assert_eq!(bytecode, "55");
+    }
+
+    #[test]
+    fn test_compile_jumpi() {
+        let bytecode = compile_instruction(Rule::jumpi);
+        assert_eq!(bytecode, "56");
+    }
+
+    #[test]
+    fn test_compile_pc() {
+        let bytecode = compile_instruction(Rule::pc);
+        assert_eq!(bytecode, "57");
+    }
+
+    #[test]
+    fn test_compile_msize() {
+        let bytecode = compile_instruction(Rule::msize);
+        assert_eq!(bytecode, "58");
+    }
+
+    #[test]
+    fn test_compile_gas() {
+        let bytecode = compile_instruction(Rule::gas);
+        assert_eq!(bytecode, "59");
+    }
+
+    #[test]
+    fn test_compile_jumpdest() {
+        let bytecode = compile_instruction(Rule::jumpdest);
+        assert_eq!(bytecode, "5A");
+    }
+
+    #[test]
+    fn test_compile_push1() {
+        let bytecode = compile_instruction(Rule::push1);
+        assert_eq!(bytecode, "5B");
+    }
+
+    #[test]
+    fn test_compile_push2() {
+        let bytecode = compile_instruction(Rule::push2);
+        assert_eq!(bytecode, "60");
+    }
+
+    #[test]
+    fn test_compile_push3() {
+        let bytecode = compile_instruction(Rule::push3);
+        assert_eq!(bytecode, "61");
+    }
+
+    #[test]
+    fn test_compile_push4() {
+        let bytecode = compile_instruction(Rule::push4);
+        assert_eq!(bytecode, "62");
+    }
+
+    #[test]
+    fn test_compile_push5() {
+        let bytecode = compile_instruction(Rule::push5);
+        assert_eq!(bytecode, "63");
+    }
+
+    #[test]
+    fn test_compile_push6() {
+        let bytecode = compile_instruction(Rule::push6);
+        assert_eq!(bytecode, "64");
+    }
+
+    #[test]
+    fn test_compile_push7() {
+        let bytecode = compile_instruction(Rule::push7);
+        assert_eq!(bytecode, "65");
+    }
+
+    #[test]
+    fn test_compile_push8() {
+        let bytecode = compile_instruction(Rule::push8);
+        assert_eq!(bytecode, "66");
+    }
+
+    #[test]
+    fn test_compile_push9() {
+        let bytecode = compile_instruction(Rule::push9);
+        assert_eq!(bytecode, "67");
+    }
+
+    #[test]
+    fn test_compile_push10() {
+        let bytecode = compile_instruction(Rule::push10);
+        assert_eq!(bytecode, "68");
+    }
+
+    #[test]
+    fn test_compile_push11() {
+        let bytecode = compile_instruction(Rule::push11);
+        assert_eq!(bytecode, "69");
+    }
+
+    #[test]
+    fn test_compile_push12() {
+        let bytecode = compile_instruction(Rule::push12);
+        assert_eq!(bytecode, "6A");
+    }
+
+    #[test]
+    fn test_compile_push13() {
+        let bytecode = compile_instruction(Rule::push13);
+        assert_eq!(bytecode, "6B");
+    }
+
+    #[test]
+    fn test_compile_push14() {
+        let bytecode = compile_instruction(Rule::push14);
+        assert_eq!(bytecode, "6C");
+    }
+
+    #[test]
+    fn test_compile_push15() {
+        let bytecode = compile_instruction(Rule::push15);
+        assert_eq!(bytecode, "6D");
+    }
+
+    #[test]
+    fn test_compile_push16() {
+        let bytecode = compile_instruction(Rule::push16);
+        assert_eq!(bytecode, "6E");
+    }
+
+    #[test]
+    fn test_compile_push17() {
+        let bytecode = compile_instruction(Rule::push17);
+        assert_eq!(bytecode, "6F");
+    }
+
+    #[test]
+    fn test_compile_push18() {
+        let bytecode = compile_instruction(Rule::push18);
+        assert_eq!(bytecode, "70");
+    }
+
+    #[test]
+    fn test_compile_push19() {
+        let bytecode = compile_instruction(Rule::push19);
+        assert_eq!(bytecode, "71");
+    }
+
+    #[test]
+    fn test_compile_push20() {
+        let bytecode = compile_instruction(Rule::push20);
+        assert_eq!(bytecode, "72");
+    }
+
+    #[test]
+    fn test_compile_push21() {
+        let bytecode = compile_instruction(Rule::push21);
+        assert_eq!(bytecode, "73");
+    }
+
+    #[test]
+    fn test_compile_push22() {
+        let bytecode = compile_instruction(Rule::push22);
+        assert_eq!(bytecode, "74");
+    }
+
+    #[test]
+    fn test_compile_push23() {
+        let bytecode = compile_instruction(Rule::push23);
+        assert_eq!(bytecode, "75");
+    }
+
+    #[test]
+    fn test_compile_push24() {
+        let bytecode = compile_instruction(Rule::push24);
+        assert_eq!(bytecode, "76");
+    }
+
+    #[test]
+    fn test_compile_push25() {
+        let bytecode = compile_instruction(Rule::push25);
+        assert_eq!(bytecode, "77");
+    }
+
+    #[test]
+    fn test_compile_push26() {
+        let bytecode = compile_instruction(Rule::push26);
+        assert_eq!(bytecode, "78");
+    }
+
+    #[test]
+    fn test_compile_push27() {
+        let bytecode = compile_instruction(Rule::push27);
+        assert_eq!(bytecode, "79");
+    }
+
+    #[test]
+    fn test_compile_push28() {
+        let bytecode = compile_instruction(Rule::push28);
+        assert_eq!(bytecode, "7A");
+    }
+
+    #[test]
+    fn test_compile_push29() {
+        let bytecode = compile_instruction(Rule::push29);
+        assert_eq!(bytecode, "7B");
+    }
+
+    #[test]
+    fn test_compile_push30() {
+        let bytecode = compile_instruction(Rule::push30);
+        assert_eq!(bytecode, "7D");
+    }
+
+    #[test]
+    fn test_compile_push31() {
+        let bytecode = compile_instruction(Rule::push31);
+        assert_eq!(bytecode, "7E");
+    }
+
+    #[test]
+    fn test_compile_push32() {
+        let bytecode = compile_instruction(Rule::push32);
+        assert_eq!(bytecode, "7F");
+    }
+
+    #[test]
+    fn test_compile_dup1() {
+        let bytecode = compile_instruction(Rule::dup1);
+        assert_eq!(bytecode, "80");
+    }
+
+    #[test]
+    fn test_compile_dup2() {
+        let bytecode = compile_instruction(Rule::dup2);
+        assert_eq!(bytecode, "81");
+    }
+
+    #[test]
+    fn test_compile_dup3() {
+        let bytecode = compile_instruction(Rule::dup3);
+        assert_eq!(bytecode, "82");
+    }
+
+    #[test]
+    fn test_compile_dup4() {
+        let bytecode = compile_instruction(Rule::dup4);
+        assert_eq!(bytecode, "83");
+    }
+
+    #[test]
+    fn test_compile_dup5() {
+        let bytecode = compile_instruction(Rule::dup5);
+        assert_eq!(bytecode, "84");
+    }
+
+    #[test]
+    fn test_compile_dup6() {
+        let bytecode = compile_instruction(Rule::dup6);
+        assert_eq!(bytecode, "85");
+    }
+
+    #[test]
+    fn test_compile_dup7() {
+        let bytecode = compile_instruction(Rule::dup7);
+        assert_eq!(bytecode, "86");
+    }
+
+    #[test]
+    fn test_compile_dup8() {
+        let bytecode = compile_instruction(Rule::dup8);
+        assert_eq!(bytecode, "87");
+    }
+
+    #[test]
+    fn test_compile_dup9() {
+        let bytecode = compile_instruction(Rule::dup9);
+        assert_eq!(bytecode, "88");
+    }
+
+    #[test]
+    fn test_compile_dup10() {
+        let bytecode = compile_instruction(Rule::dup10);
+        assert_eq!(bytecode, "89");
+    }
+
+    #[test]
+    fn test_compile_dup11() {
+        let bytecode = compile_instruction(Rule::dup11);
+        assert_eq!(bytecode, "8A");
+    }
+
+    #[test]
+    fn test_compile_dup12() {
+        let bytecode = compile_instruction(Rule::dup12);
+        assert_eq!(bytecode, "8B");
+    }
+
+    #[test]
+    fn test_compile_dup13() {
+        let bytecode = compile_instruction(Rule::dup13);
+        assert_eq!(bytecode, "8C");
+    }
+
+    #[test]
+    fn test_compile_dup14() {
+        let bytecode = compile_instruction(Rule::dup14);
+        assert_eq!(bytecode, "8D");
+    }
+
+    #[test]
+    fn test_compile_dup15() {
+        let bytecode = compile_instruction(Rule::dup15);
+        assert_eq!(bytecode, "8E");
+    }
+
+    #[test]
+    fn test_compile_dup16() {
+        let bytecode = compile_instruction(Rule::dup16);
+        assert_eq!(bytecode, "8F");
+    }
+
+    #[test]
+    fn test_compile_swap1() {
+        let bytecode = compile_instruction(Rule::swap1);
+        assert_eq!(bytecode, "90");
+    }
+
+    #[test]
+    fn test_compile_swap2() {
+        let bytecode = compile_instruction(Rule::swap2);
+        assert_eq!(bytecode, "91");
+    }
+
+    #[test]
+    fn test_compile_swap3() {
+        let bytecode = compile_instruction(Rule::swap3);
+        assert_eq!(bytecode, "92");
+    }
+
+    #[test]
+    fn test_compile_swap4() {
+        let bytecode = compile_instruction(Rule::swap4);
+        assert_eq!(bytecode, "93");
+    }
+
+    #[test]
+    fn test_compile_swap5() {
+        let bytecode = compile_instruction(Rule::swap5);
+        assert_eq!(bytecode, "94");
+    }
+
+    #[test]
+    fn test_compile_swap6() {
+        let bytecode = compile_instruction(Rule::swap6);
+        assert_eq!(bytecode, "95");
+    }
+
+    #[test]
+    fn test_compile_swap7() {
+        let bytecode = compile_instruction(Rule::swap7);
+        assert_eq!(bytecode, "96");
+    }
+
+    #[test]
+    fn test_compile_swap8() {
+        let bytecode = compile_instruction(Rule::swap8);
+        assert_eq!(bytecode, "97");
+    }
+
+    #[test]
+    fn test_compile_swap9() {
+        let bytecode = compile_instruction(Rule::swap9);
+        assert_eq!(bytecode, "98");
+    }
+
+    #[test]
+    fn test_compile_swap10() {
+        let bytecode = compile_instruction(Rule::swap10);
+        assert_eq!(bytecode, "99");
+    }
+
+    #[test]
+    fn test_compile_swap11() {
+        let bytecode = compile_instruction(Rule::swap11);
+        assert_eq!(bytecode, "9A");
+    }
+
+    #[test]
+    fn test_compile_swap12() {
+        let bytecode = compile_instruction(Rule::swap12);
+        assert_eq!(bytecode, "9B");
+    }
+
+    #[test]
+    fn test_compile_swap13() {
+        let bytecode = compile_instruction(Rule::swap13);
+        assert_eq!(bytecode, "9C");
+    }
+
+    #[test]
+    fn test_compile_swap14() {
+        let bytecode = compile_instruction(Rule::swap14);
+        assert_eq!(bytecode, "9D");
+    }
+
+    #[test]
+    fn test_compile_swap15() {
+        let bytecode = compile_instruction(Rule::swap15);
+        assert_eq!(bytecode, "9E");
+    }
+
+    #[test]
+    fn test_compile_swap16() {
+        let bytecode = compile_instruction(Rule::swap16);
+        assert_eq!(bytecode, "9F");
+    }
+
+    #[test]
+    fn test_compile_log0() {
+        let bytecode = compile_instruction(Rule::log0);
+        assert_eq!(bytecode, "A0");
+    }
+
+    #[test]
+    fn test_compile_log1() {
+        let bytecode = compile_instruction(Rule::log1);
+        assert_eq!(bytecode, "A1");
+    }
+
+    #[test]
+    fn test_compile_log2() {
+        let bytecode = compile_instruction(Rule::log2);
+        assert_eq!(bytecode, "A2");
+    }
+
+    #[test]
+    fn test_compile_log3() {
+        let bytecode = compile_instruction(Rule::log3);
+        assert_eq!(bytecode, "A3");
+    }
+
+    #[test]
+    fn test_compile_log4() {
+        let bytecode = compile_instruction(Rule::log4);
+        assert_eq!(bytecode, "A4");
+    }
+
+    #[test]
+    fn test_compile_create() {
+        let bytecode = compile_instruction(Rule::create);
+        assert_eq!(bytecode, "F0");
+    }
+
+    #[test]
+    fn test_compile_call() {
+        let bytecode = compile_instruction(Rule::call);
+        assert_eq!(bytecode, "F1");
+    }
+
+    #[test]
+    fn test_compile_callcode() {
+        let bytecode = compile_instruction(Rule::callcode);
+        assert_eq!(bytecode, "F2");
+    }
+
+    #[test]
+    fn test_compile_return() {
+        let bytecode = compile_instruction(Rule::evmReturn);
+        assert_eq!(bytecode, "F3");
+    }
+
+    #[test]
+    fn test_compile_delegatecall() {
+        let bytecode = compile_instruction(Rule::delegatecall);
+        assert_eq!(bytecode, "F4");
+    }
+
+    #[test]
+    fn test_compile_create2() {
+        let bytecode = compile_instruction(Rule::create2);
+        assert_eq!(bytecode, "F5");
+    }
+
+    #[test]
+    fn test_compile_staticcall() {
+        let bytecode = compile_instruction(Rule::staticcall);
+        assert_eq!(bytecode, "FA");
+    }
+
+    #[test]
+    fn test_compile_revert() {
+        let bytecode = compile_instruction(Rule::revert);
+        assert_eq!(bytecode, "FD");
+    }
+
+    #[test]
+    fn test_compile_selfdestruct() {
+        let bytecode = compile_instruction(Rule::selfdestruct);
+        assert_eq!(bytecode, "FF");
+    }
+}
