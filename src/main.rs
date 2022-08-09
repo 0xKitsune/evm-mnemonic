@@ -49,8 +49,6 @@ fn main() -> Result<(), EVMMError> {
         // init subcommand
         .subcommand(
             Command::new("init")
-                .long_flag("init") 
-                .short_flag('i')
                 .about("Creates a new Foundry project with all the moving parts to test EVMM contracts")
         )
         .get_matches();
