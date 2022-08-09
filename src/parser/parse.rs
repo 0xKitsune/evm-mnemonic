@@ -425,7 +425,7 @@ fn validate_proceeding_push_instruction(
 
         match next_instruction.as_rule() {
             Rule::number | Rule::hex_number => {
-                let value_byte_size = get_byte_size(next_instruction);
+                let value_byte_size = get_byte_size(next_instruction)?;
 
                 if value_byte_size > expected_size {
                     return Err(EVMMError::ValueTooBigForPushInstruction(
@@ -434,10 +434,10 @@ fn validate_proceeding_push_instruction(
                         value_byte_size,
                     ));
                 } else if value_byte_size == expected_size {
-                    Ok(convert_to_hex_number_and_strip_prefix(next_instruction))
+                    Ok(convert_to_hex_number_and_strip_prefix(next_instruction)?)
                 } else {
                     let compiled_push_value =
-                        convert_to_hex_number_and_strip_prefix(next_instruction);
+                        convert_to_hex_number_and_strip_prefix(next_instruction)?;
 
                     //pad the value and return the compiled value to be added to the contract code
                     Ok([
@@ -459,40 +459,35 @@ fn validate_proceeding_push_instruction(
     }
 }
 
-fn convert_to_hex_number_and_strip_prefix(value: &Pair<Rule>) -> String {
+fn convert_to_hex_number_and_strip_prefix(value: &Pair<Rule>) -> Result<String, EVMMError> {
     match value.as_rule() {
         Rule::number => {
             let value_as_uint256 = uint256::Uint256::from_str(value.as_str()).unwrap();
 
-            format!("{:X}", value_as_uint256)
+            Ok(format!("{:X}", value_as_uint256))
         }
 
-        Rule::hex_number => value.as_str()[2..].to_string(),
-        _ => {
-            panic!(
-                "Error when converting to hex number, unexpected rule: {:?}",
-                value.as_rule()
-            );
-        }
+        Rule::hex_number => Ok(value.as_str()[2..].to_string()),
+        _ => Err(EVMMError::UnexpectedInstruction(value.as_str().to_owned())),
     }
 }
 
 ///Gets the size of a number or hex number when represented as bytes
-fn get_byte_size(instruction: &Pair<Rule>) -> usize {
+fn get_byte_size(instruction: &Pair<Rule>) -> Result<usize, EVMMError> {
     match instruction.as_rule() {
         Rule::number => {
             let number_value = uint256::Uint256::from_str(instruction.as_str()).unwrap();
             let number_value_as_bytes = number_value.to_bytes_be();
 
             //return the length of bytes
-            number_value_as_bytes.len()
+            Ok(number_value_as_bytes.len())
         }
         Rule::hex_number => {
             let hex_number_value_as_bytes =
-                decode_hex(&convert_to_hex_number_and_strip_prefix(instruction)).unwrap();
+                decode_hex(&convert_to_hex_number_and_strip_prefix(instruction)?).unwrap();
 
             //return the length of bytes
-            hex_number_value_as_bytes.len()
+            Ok(hex_number_value_as_bytes.len())
         }
         _ => {
             //TODO: gracefully handle error
