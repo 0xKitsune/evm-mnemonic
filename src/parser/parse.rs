@@ -430,6 +430,8 @@ fn validate_proceeding_push_instruction(
                         next_instruction.as_str().to_owned(),
                         value_byte_size,
                     ));
+                } else if value_byte_size == expected_size {
+                    Ok(convert_to_hex_number_and_strip_prefix(next_instruction))
                 } else {
                     let compiled_push_value =
                         convert_to_hex_number_and_strip_prefix(next_instruction);
@@ -539,5 +541,24 @@ mod tests {
         let parsed_file = parse_file(String::from("test_case"), file);
 
         println!("{:?}", parsed_file);
+    }
+
+    #[test]
+    fn test_fail_push1() {
+        let file = r#"
+    PUSH10 0x0102
+    "#;
+
+        let result = evmm_parse(String::from("test_case"), file);
+
+        match result {
+            Ok(compiled_bytecode) => {
+                println!("{:?}", compiled_bytecode);
+            }
+
+            Err(err) => {
+                println!("{:?}", err.to_string())
+            }
+        }
     }
 }
