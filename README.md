@@ -33,3 +33,9 @@ RETURN
 
 ## EVMM Repl
 
+## TODOS:
+(Will make issues for each todo)
+
+- CI Pipeline.
+- More human readable error messages.
+- Simple benchmark comparison in Foundry between Solidity, Vyper, Yul, Huff, EVMM.
