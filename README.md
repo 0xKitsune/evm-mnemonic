@@ -39,3 +39,4 @@ RETURN
 - CI Pipeline.
 - More human readable error messages.
 - Simple benchmark comparison in Foundry between Solidity, Vyper, Yul, Huff, EVMM.
+- Thorough snapshot parser tests
