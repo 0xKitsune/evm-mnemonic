@@ -12,7 +12,7 @@ use std::str::FromStr;
 #[grammar = "evmm.pest"]
 pub struct EVMMParser;
 
-fn evmm_parse(file_name: String, unparsed_file: &str) -> Result<String, EVMMParserError> {
+pub fn evmm_parse(file_name: String, unparsed_file: &str) -> Result<String, EVMMParserError> {
     let parsed_file = parse_file(file_name, unparsed_file);
 
     let instructions = parsed_file.into_inner().peekable();
@@ -399,6 +399,9 @@ fn parse_instructions(
 
                     //add the padded value to the  bytecode
                     contract_bytecode.push_str(&compiled_push_value);
+
+                    //update the stack size
+                    stack_size += 1;
                 }
 
                 _ => {}
@@ -492,6 +495,7 @@ fn get_byte_size(instruction: &Pair<Rule>) -> usize {
             hex_number_value_as_bytes.len()
         }
         _ => {
+            //TODO: gracefully handle error
             panic!("Something went wrong, a non number or hex number Pair<Rule> was passed into get_byte_size")
         }
     }
@@ -546,7 +550,7 @@ mod tests {
     #[test]
     fn test_fail_push1() {
         let file = r#"
-    PUSH10 0x0102
+    PUSH1 0x0102
     "#;
 
         let result = evmm_parse(String::from("test_case"), file);

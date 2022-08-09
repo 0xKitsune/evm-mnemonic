@@ -1,1 +1,4 @@
-//Example contract, will update later, also will add syntax highlighting for editors.
+PUSH1 0x00
+PUSH1 0x32
+MSTORE
+

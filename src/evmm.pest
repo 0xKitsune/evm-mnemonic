@@ -162,5 +162,5 @@ revert = { "revert" | "REVERT" }
 selfdestruct = { "selfdestruct" | "SELFDESTRUCT" }
 
 
-hex_number = @{ "0x" ~ ('0'..'9'| 'a'..'f'|'A'..'F')+ }
+hex_number = @{ ("0x" | "0X") ~ ('0'..'9'| 'a'..'f'|'A'..'F')+ }
 number = @{ASCII_DIGIT+}
