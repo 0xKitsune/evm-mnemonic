@@ -33,14 +33,24 @@ fn main() -> Result<(), EVMMError> {
                     Arg::new("bytecode")
                         .long("bytecode")
                         .short('b')
-                        .conflicts_with("directory")
-                        .help("Prints the compiled bytecode for a specific contract into the terminal.")
+                        .conflicts_with("deploymentBytecode")
+                        .help("Logs the compiled bytecode for all compiled contracts into the terminal.")
                         .action(ArgAction::Set)
-                ) .arg(
+                ) 
+                .arg(   
+                    Arg::new("deploymentBytecode")
+                .long("deploymentBytecode")
+                .short('e')
+                .help("Logs the compiled deployment bytecode for all compiled contracts into the terminal.")
+                .conflicts_with("bytecode")
+                .action(ArgAction::Set)
+                .number_of_values(1),)
+                
+                .arg(
                     Arg::new("output")
                         .long("output")
                         .short('o')
-                        .help("Outputs the compiled bytecode for any contract that was compiled. If an output directory is not specified, the output will be written to `evmasm/` by default.")
+                        .help("Outputs the bytecode for all compiled contracts into an `.evmasm` file. If an output directory is not specified, the output will be written to `evmasm/` by default. This command can be chained with `--bytecode` or `--deploymentBytecode`, but if neither is specified, the `--output` option will default to writing the contract's bytecode to the output file. For example, to write a specific contract's bytecode to a file, you can use `compile <contract_name.evmm> --bytecode --output. To compile all contracts and write the deployment bytecode, you can use `compile --deploymentBytecode --output`")
                         .action(ArgAction::Set)
                         .number_of_values(1),
                 ),
