@@ -1,7 +1,6 @@
 use crate::compiler::compile::compile_instruction;
 use crate::evmm_error::evmm_error::EVMMError;
 use core::num::ParseIntError;
-use core::panic;
 use num256::uint256;
 use pest::iterators::{Pair, Pairs};
 use pest::Parser;
@@ -489,10 +488,9 @@ fn get_byte_size(instruction: &Pair<Rule>) -> Result<usize, EVMMError> {
             //return the length of bytes
             Ok(hex_number_value_as_bytes.len())
         }
-        _ => {
-            //TODO: gracefully handle error
-            panic!("Something went wrong, a non number or hex number Pair<Rule> was passed into get_byte_size")
-        }
+        _ => Err(EVMMError::UnexpectedInstruction(
+            instruction.as_str().to_owned(),
+        )),
     }
 }
 
