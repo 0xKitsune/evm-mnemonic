@@ -1,19 +1,19 @@
 use std::error::Error;
 use std::fmt;
 #[derive(Debug)]
-pub enum EVMMParserError {
+pub enum EVMMError {
     NotEnoughValuesOnStack(String, usize, usize),
     ValueTooBigForPushInstruction(String, String, usize),
     UnexpectedInstruction(String),
     ExpectedInstruction(),
 }
 
-impl std::error::Error for EVMMParserError {}
+impl std::error::Error for EVMMError {}
 
-impl fmt::Display for EVMMParserError {
+impl fmt::Display for EVMMError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            EVMMParserError::NotEnoughValuesOnStack(
+            EVMMError::NotEnoughValuesOnStack(
                 instruction,
                 stack_size_required,
                 current_stack_size,
@@ -21,7 +21,7 @@ impl fmt::Display for EVMMParserError {
                 write!(f, "Not enough values on the stack. Instruction: {:?}. Stack size: {:?}. Stack Size Needed: {:?}", instruction, current_stack_size, stack_size_required)
             }
 
-            EVMMParserError::ValueTooBigForPushInstruction(instruction, value, value_size) => {
+            EVMMError::ValueTooBigForPushInstruction(instruction, value, value_size) => {
                 write!(
                     f,
                     "Value is too large for PUSH instruction. Instruction: {:?}. Value: {:?}. Value byte size: {:?}",
@@ -29,11 +29,11 @@ impl fmt::Display for EVMMParserError {
                 )
             }
 
-            EVMMParserError::UnexpectedInstruction(instruction) => {
+            EVMMError::UnexpectedInstruction(instruction) => {
                 write!(f, "Unexpected instruction: {:?}", instruction)
             }
 
-            EVMMParserError::ExpectedInstruction() => {
+            EVMMError::ExpectedInstruction() => {
                 write!(f, "Expected instruction but none was found")
             }
         }
