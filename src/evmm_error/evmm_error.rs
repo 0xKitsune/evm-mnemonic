@@ -6,6 +6,7 @@ pub enum EVMMError {
     ValueTooBigForPushInstruction(String, String, usize),
     UnexpectedInstruction(String),
     ExpectedInstruction(),
+    ContractNotFound(String),
 }
 
 impl std::error::Error for EVMMError {}
@@ -35,6 +36,10 @@ impl fmt::Display for EVMMError {
 
             EVMMError::ExpectedInstruction() => {
                 write!(f, "Expected instruction but none was found")
+            }
+
+            EVMMError::ContractNotFound(contract_path) => {
+                write!(f, "Contract at {:?} could not be found", contract_path)
             }
         }
     }

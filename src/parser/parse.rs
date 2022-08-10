@@ -1,5 +1,3 @@
-use crate::compiler::compile::compile_instructions;
-use crate::evmm_error::evmm_error::EVMMError;
 use pest::iterators::Pair;
 use pest::Parser;
 

@@ -28,8 +28,8 @@ fn main() -> Result<(), EVMMError> {
                     Arg::new("contract")
                         .long("contract")
                         .short('c')
-                        .help("Target a specific contract to compile. This flag takes a path as the argument. If the filename of the contract is only provided, the program will look in the ./src/contracts/ directory by default.")
-                        .conflicts_with("directory")
+                        .help("Target a specific contract to compile. This flag takes a path as the argument. If the filename of the contract is only provided, the program will look in the ./evmm_contracts directory by default.")
+                        .conflicts_with("target-directory")
                         .action(ArgAction::Set)
                         .number_of_values(1),
                 )
