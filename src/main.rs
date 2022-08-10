@@ -101,7 +101,7 @@ fn main() -> Result<(), EVMMError> {
                 //Clap should not let the program get this far if the --directory flag is used
                 //unless there was a value set so we can use unwrap
                 contract = arg_matches.get_one::<String>("contract").unwrap();
-            } else if arg_matches.contains_id("directory") {
+            } else if arg_matches.contains_id("target-directory") {
                 //Clap should not let the program get this far if the --directory flag is used
                 //unless there was a value set so we can use unwrap
                 directory_to_compile = arg_matches.get_one::<String>("directory").unwrap();
@@ -111,7 +111,7 @@ fn main() -> Result<(), EVMMError> {
                 if let Some(target_directory) = arg_matches.get_one::<String>("output") {
                     output_directory = target_directory;
                 } else {
-                    output_directory = "./evmmasm";
+                    output_directory = core::evmm::DEFAULT_COMPILATION_DIR;
                 }
             }
 

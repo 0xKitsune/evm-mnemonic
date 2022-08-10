@@ -32,7 +32,7 @@ mod tests {
     #[test]
     fn test_parse_push1() {
         let file = r#"
-    PUSH1 0x01 
+        PUSH1 0x01
     "#;
 
         let parsed_file = parse_file(file);
