@@ -18,7 +18,7 @@ impl EVMMFile {
     }
 }
 
-struct EVMASMFile {
+pub struct EVMASMFile {
     file_name: String,
     compiled_bytecode: String,
 }
@@ -62,7 +62,7 @@ fn parse_and_compile_bytecode(
 ) -> Result<Vec<EVMASMFile>, EVMMError> {
     let mut compiled_evmasm_files: Vec<EVMASMFile> = vec![];
 
-    for evmm_file in evmm_files {
+    for mut evmm_file in evmm_files {
         let parsed_file = parse_file(evmm_file.file_name.clone(), &evmm_file.file_contents);
 
         let compiled_bytecode =
@@ -72,6 +72,8 @@ fn parse_and_compile_bytecode(
         if deployment_bytecode {
             //add deployment bytecode
         }
+
+        evmm_file.file_name.push_str("_deploy");
 
         compiled_evmasm_files.push(EVMASMFile::new(evmm_file.file_name, compiled_bytecode));
     }
