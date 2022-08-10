@@ -6,7 +6,6 @@ Inspired by [EVM codes](https://www.evm.codes/playground?unit=Wei&codeType=Mnemo
 
 
 ## Syntax
-(Will update later with a real snippet for swapping on a DEX or something.)
 
 ```rust
 PUSH1 0x42
@@ -30,12 +29,4 @@ RETURN
 ## Testing
 
 
-## EVMM Repl
-
-## TODOS:
-(Will make issues for each todo)
-
-- CI Pipeline.
-- More human readable error messages.
-- Simple benchmark comparison in Foundry between Solidity, Vyper, Yul, Huff, EVMM.
-- Thorough snapshot parser tests
+## EVMM Repl 
