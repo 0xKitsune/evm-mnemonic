@@ -1,6 +1,7 @@
 use crate::compiler::compile::compile_instructions;
 use crate::evmm_error::evmm_error::EVMMError;
-use crate::parser::parse::parse_file;
+use crate::parser::parse::{self, parse_file};
+use std::io::Error;
 use std::path::Path;
 use std::{fs, vec};
 
@@ -38,22 +39,40 @@ pub fn evmm_parse_and_compile(
     directory_to_compile: &str,
     output_directory: &str,
 ) -> Result<(), EVMMError> {
-    let evmm_files = get_contract_contents(contract_path, directory_to_compile);
+    //TODO: need to handle errors gracefully
+    let evmm_files = get_contract_contents(contract_path, directory_to_compile).unwrap();
 
-    let compiled_bytecode_vec = parse_and_compile_bytecode(evmm_files, deployment_bytecode)?;
+    let evmasm_files = parse_and_compile_bytecode(evmm_files, deployment_bytecode)?;
 
     //output the deployment bytecode
-    output_contracts(compiled_bytecode_vec, deployment_bytecode, output_directory);
+    output_contracts(evmasm_files, deployment_bytecode, output_directory);
 
     Ok(())
 }
 
-fn get_contract_contents(contract_path: &str, directory_to_compile: &str) -> Vec<EVMMFile> {
-    let contract_contents: Vec<EVMMFile> = vec![];
+fn get_contract_contents(
+    contract_path: &str,
+    directory_to_compile: &str,
+) -> Result<Vec<EVMMFile>, Error> {
+    let mut evmm_files: Vec<EVMMFile> = vec![];
 
-    if directory_to_compile != "" {}
+    if directory_to_compile != "" {
+        let paths = fs::read_dir(contract_path)?;
 
-    contract_contents
+        for path in paths {
+            let file_path = path.unwrap().path();
+            //Sheild your eyes, please disregard this line
+            let file_name = file_path.file_name().unwrap().to_str().unwrap().to_string();
+
+            let unparsed_file = fs::read_to_string(file_path).unwrap();
+
+            let file_contents = parse::parse_file(&unparsed_file);
+
+            evmm_files.push(EVMMFile::new(file_name, file_contents.to_string()))
+        }
+    }
+
+    Ok(evmm_files)
 }
 
 fn parse_and_compile_bytecode(
@@ -63,7 +82,7 @@ fn parse_and_compile_bytecode(
     let mut compiled_evmasm_files: Vec<EVMASMFile> = vec![];
 
     for mut evmm_file in evmm_files {
-        let parsed_file = parse_file(evmm_file.file_name.clone(), &evmm_file.file_contents);
+        let parsed_file = parse_file(&evmm_file.file_contents);
 
         let compiled_bytecode =
             compile_instructions(parsed_file.into_inner().peekable(), "".to_owned())?;
@@ -82,11 +101,11 @@ fn parse_and_compile_bytecode(
 }
 
 fn output_contracts(
-    compiled_bytecode_vec: Vec<EVMASMFile>,
+    evmasm_files: Vec<EVMASMFile>,
     deployment_bytecode: bool,
     output_directory: &str,
 ) {
-    for compiled_bytecode in compiled_bytecode_vec {
+    for evmasm_file in evmasm_files {
         if output_directory != "" {
             //if the compile contract is deployement bytecode, name the file `deploy_<contract_name>.evmasm`
             if deployment_bytecode {
