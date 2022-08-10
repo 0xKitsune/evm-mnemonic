@@ -6,55 +6,49 @@ use std::path::Path;
 
 pub fn evmm_parse_and_compile(
     bytecode: bool,
-    deploymentBytecode: bool,
+    deployment_bytecode: bool,
     contract_path: &str,
     directory_to_compile: &str,
     output_directory: &str,
-) -> Result<String, EVMMError> {
-    //If a specific contract has been targeted for compilation
-    if contract_path != "" {
-        //if the path to the contract includes a directory
-        if contract_path.contains("/") {
-            match fs::read_to_string(contract_path) {
-                Ok(file_contents) => {
-                    let file_name = Path::new(&contract_path)
-                        .file_name()
-                        .unwrap()
-                        .to_str()
-                        .unwrap()
-                        .to_string();
+) -> Result<(), EVMMError> {
+    let file_contents = get_contract_contents(contract_path, directory_to_compile);
 
-                    let parsed_file = parse_file(file_name, &file_contents);
+    //If bytecode is true or deployment bytecode is false
+    if bytecode == true || deployment_bytecode == false {
+        let compiled_bytecode_vec = parse_and_compile_bytecode();
 
-                    let compiled_bytecode =
-                        compile_instructions(parsed_file.into_inner().peekable(), "".to_string())?;
-
-                    //compile the deployment bytecode
-                    if deploymentBytecode {
-                        //If the output directory was specified, then output to filepath
-                        if output_directory != "" {}
-                    } else {
-                        if output_directory != "" {
-                        } else {
-                        }
-                    }
-                }
-                Err(_) => return Err(EVMMError::ContractNotFound(contract_path.to_string())),
-            };
-        } else {
-        }
-
-        return Ok("".to_string());
-    } else if directory_to_compile != "" {
+        //output the deployment bytecode
+        output_contracts(compiled_bytecode_vec, deployment_bytecode, output_directory);
     } else {
-        //compile the ./evmm_contracts directory
+        //otherwise, compile deployment bytecode
+        let compiled_deployment_bytecode_vec = parse_and_compile_deployment_bytecode();
+
+        //output the deployment bytecode
+        output_contracts(
+            compiled_deployment_bytecode_vec,
+            deployment_bytecode,
+            output_directory,
+        );
     }
 
-    // let parsed_file = parse_file(file_name, unparsed_file);
+    Ok(())
+}
 
-    // let instructions = parsed_file.into_inner().peekable();
+fn get_contract_contents(contract_path: &str, directory_to_compile: &str) -> Vec<String> {
+    vec![]
+}
 
-    // Ok(compile_instructions(instructions, String::from(""))?)
+fn parse_and_compile_bytecode() -> Vec<String> {
+    vec![]
+}
 
-    Ok("".to_string())
+fn parse_and_compile_deployment_bytecode() -> Vec<String> {
+    vec![]
+}
+
+fn output_contracts(
+    compiled_bytecode_vec: Vec<String>,
+    deployment_bytecode: bool,
+    output_directory: &str,
+) {
 }
