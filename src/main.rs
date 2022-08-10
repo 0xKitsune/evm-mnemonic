@@ -86,14 +86,13 @@ fn main() -> Result<(), EVMMError> {
     match matches.subcommand() {
         Some(("compile", arg_matches)) => {
             //handle the command line args
-            let mut bytecode = false;
             let mut deployment_bytecode = false;
             let mut contract = "";
             let mut directory_to_compile = "";
             let mut output_directory = "";
 
             if arg_matches.contains_id("bytecode") {
-                bytecode = true;
+                deployment_bytecode = false;
             } else if arg_matches.contains_id("deployment-bytecode") {
                 deployment_bytecode = true;
             }
@@ -118,7 +117,6 @@ fn main() -> Result<(), EVMMError> {
 
             //compile evmm contracts with command line args
             evmm_parse_and_compile(
-                bytecode,
                 deployment_bytecode,
                 contract,
                 directory_to_compile,
