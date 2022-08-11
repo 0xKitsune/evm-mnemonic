@@ -51,9 +51,8 @@ fn main() -> Result<(), EVMMError> {
                     Arg::new("print")
                         .long("print")
                         .short('p')
-                        .conflicts_with("output")
+                        .conflicts_with("output-directory")
                         .help("Logs the bytecode for all compiled contracts into the terminal.")
-                        .action(ArgAction::SetTrue)
                 )
                 //
                 //--deployment-bytecode option 
@@ -62,7 +61,6 @@ fn main() -> Result<(), EVMMError> {
                         .long("deployment-bytecode")
                         .short('d')
                         .help("Logs the compiled deployment bytecode for all compiled contracts into the terminal.")
-                        .action(ArgAction::SetTrue)
                 )
                 //
                 //--output option
