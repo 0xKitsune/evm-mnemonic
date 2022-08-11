@@ -137,7 +137,6 @@ fn output_contracts(
     for evmasm_file in evmasm_files {
         //If an output directory is specified, write to a file
         if print_in_terminal == false {
-            println!("isfalse");
             if fs::metadata(output_directory).is_ok() {
                 let mut new_evmasm_file =
                     File::create(format!("{}/{}", output_directory, evmasm_file.file_name))
