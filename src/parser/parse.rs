@@ -6,8 +6,8 @@ use pest::Parser;
 pub struct EVMMParser;
 
 pub fn parse_file(unparsed_file: &str) -> Pair<Rule> {
-    EVMMParser::parse(Rule::file, &unparsed_file)
-        .expect(&format!("Error when parsing file"))
+    EVMMParser::parse(Rule::file, unparsed_file)
+        .unwrap_or_else(|_| panic!("Error when parsing file"))
         .next()
         .unwrap()
 }
