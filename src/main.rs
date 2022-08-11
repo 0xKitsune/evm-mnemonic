@@ -4,7 +4,8 @@ mod compiler;
 mod core;
 mod evmm_error;
 mod parser;
-use crate::core::evmm::evmm_parse_and_compile;
+use crate::core::evmm::{evmm_parse_and_compile, DEFAULT_COMPILATION_DIR};
+
 use crate::evmm_error::evmm_error::EVMMError;
 use clap::{Arg, ArgAction, Command};
 extern crate pest;
@@ -21,7 +22,7 @@ fn main() -> Result<(), EVMMError> {
         // compile subcommand
         .subcommand(
             Command::new("compile")
-            .about("Compile .evmm contracts to bytecode. If a specific contract is provided, the compile command will only compile that contract. If no contract is provided, the compile command will compile everything in `./src/contracts/` by default. You can set the target directory to compile with the `-d` option. See `compile --help` for full usage.")
+            .about("Compile .evmm contracts to bytecode. If a specific contract is provided, the compile command will only compile that contract. If no contract is provided, the compile command will compile everything in `./src/contracts/` by default. You can set the target directory to compile with the `-d` option. The contract bytecode is compiled by default, however you can specify the --deployment-bytecode or -d flag to compile the deployement bytecode See `compile --help` for full usage.")
                 //
                 //--contract option
                 .arg(
@@ -45,13 +46,13 @@ fn main() -> Result<(), EVMMError> {
                         .number_of_values(1),
                 )
                 //
-                //--bytecode option 
+                //--print option 
                 .arg(
-                    Arg::new("bytecode")
-                        .long("bytecode")
-                        .short('b')
-                        .conflicts_with("deployment-bytecode")
-                        .help("Logs the compiled bytecode for all compiled contracts into the terminal.")
+                    Arg::new("print")
+                        .long("print")
+                        .short('p')
+                        .conflicts_with("output")
+                        .help("Logs the bytecode for all compiled contracts into the terminal.")
                         .action(ArgAction::SetTrue)
                 )
                 //
@@ -61,17 +62,17 @@ fn main() -> Result<(), EVMMError> {
                         .long("deployment-bytecode")
                         .short('d')
                         .help("Logs the compiled deployment bytecode for all compiled contracts into the terminal.")
-                        .conflicts_with("bytecode")
                         .action(ArgAction::SetTrue)
                 )
                 //
                 //--output option
                 .arg(
-                    Arg::new("output")
-                        .long("output")
+                    Arg::new("output-directory")
+                        .long("output-directory")
                         .short('o')
-                        .help("Outputs the bytecode for all compiled contracts into an `.evmasm` file. If an output directory is not specified, the output will be written to `evmasm/` by default. This command can be chained with `--bytecode` or `--deploymentBytecode`, but if neither is specified, the `--output` option will default to writing the contract's bytecode to the output file. For example, to write a specific contract's bytecode to a file, you can use `compile <contract_name.evmm> --bytecode --output. To compile all contracts and write the deployment bytecode, you can use `compile --deploymentBytecode --output`")
-                        .action(ArgAction::Set).min_values(0).max_values(1),
+                        .conflicts_with("print")
+                        .help("Outputs the bytecode for each compiled contract as a `.evmasm` file into the specified output directory. This command can be chained with `--bytecode` or `--deploymentBytecode`, but if neither is specified, the `--output` option will default to writing the contract's bytecode to the output file. For example, to write a specific contract's bytecode to a file, you can use `compile <contract_name.evmm> --bytecode --output. To compile all contracts and write the deployment bytecode, you can use `compile --deploymentBytecode --output`")
+                        .action(ArgAction::Set).number_of_values(1),
                 ),
         )
         //
@@ -87,13 +88,12 @@ fn main() -> Result<(), EVMMError> {
         Some(("compile", arg_matches)) => {
             //handle the command line args
             let mut deployment_bytecode = false;
+            let mut print_in_terminal = false;
             let mut contract = "";
             let mut directory_to_compile = "";
             let mut output_directory = "";
 
-            if arg_matches.contains_id("bytecode") {
-                deployment_bytecode = false;
-            } else if arg_matches.contains_id("deployment-bytecode") {
+            if arg_matches.contains_id("deployment-bytecode") {
                 deployment_bytecode = true;
             }
 
@@ -107,12 +107,17 @@ fn main() -> Result<(), EVMMError> {
                 directory_to_compile = arg_matches.get_one::<String>("directory").unwrap();
             }
 
-            if arg_matches.contains_id("output") {
-                if let Some(target_directory) = arg_matches.get_one::<String>("output") {
-                    output_directory = target_directory;
-                } else {
-                    output_directory = core::evmm::DEFAULT_COMPILATION_DIR;
-                }
+            //if the output directory is specified
+            if arg_matches.contains_id("output-directory") {
+                output_directory = arg_matches.get_one::<String>("output").unwrap();
+            } else if arg_matches.contains_id("print") {
+                //if the print arg is specified
+                print_in_terminal = true;
+            } else if !arg_matches.contains_id("output-directory")
+                && !arg_matches.contains_id("print")
+            {
+                //if the output directory is not specified and the print flag is not true, output to the default directory
+                output_directory = DEFAULT_COMPILATION_DIR;
             }
 
             //compile evmm contracts with command line args
@@ -121,6 +126,7 @@ fn main() -> Result<(), EVMMError> {
                 contract,
                 directory_to_compile,
                 output_directory,
+                print_in_terminal,
             )?;
         }
 

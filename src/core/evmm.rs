@@ -44,6 +44,7 @@ pub fn evmm_parse_and_compile(
     contract_path: &str,
     directory_to_compile: &str,
     output_directory: &str,
+    print_in_terminal: bool,
 ) -> Result<(), EVMMError> {
     //TODO: need to handle errors gracefully
     let evmm_files = get_contract_contents(contract_path, directory_to_compile).unwrap();
@@ -51,7 +52,7 @@ pub fn evmm_parse_and_compile(
     let evmasm_files = parse_and_compile_bytecode(evmm_files, deployment_bytecode)?;
 
     //output the deployment bytecode
-    output_contracts(evmasm_files, output_directory).unwrap();
+    output_contracts(evmasm_files, output_directory, print_in_terminal).unwrap();
 
     Ok(())
 }
@@ -126,10 +127,16 @@ fn parse_and_compile_bytecode(
     Ok(compiled_evmasm_files)
 }
 
-fn output_contracts(evmasm_files: Vec<EVMASMFile>, output_directory: &str) -> Result<(), Error> {
+fn output_contracts(
+    evmasm_files: Vec<EVMASMFile>,
+    output_directory: &str,
+    print_in_terminal: bool,
+) -> Result<(), Error> {
+    let evmasm_files_length = evmasm_files.len();
+
     for evmasm_file in evmasm_files {
         //If an output directory is specified, write to a file
-        if output_directory != "" {
+        if print_in_terminal == false {
             if fs::metadata(output_directory).is_ok() {
                 let mut new_evmasm_file =
                     File::create(format!("{}/{}", output_directory, evmasm_file.file_name))
@@ -145,6 +152,15 @@ fn output_contracts(evmasm_files: Vec<EVMASMFile>, output_directory: &str) -> Re
             }
         } else {
             //otherwise, just log the output in the terminal
+
+            println!("{}", evmasm_file.compiled_bytecode);
+
+            //Add a space between contract byecode if there are more than one file being logged into the terminal.
+            //Usually, you should just log one file. It is set up this way so that the Foundry x EVMM Deployer
+            // can function as it needs the deployment bytecode and nothing else to work properly.
+            if evmasm_files_length > 1 {
+                println!("")
+            }
         }
     }
 
